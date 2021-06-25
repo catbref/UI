@@ -28,7 +28,7 @@ Verify your installtion with node --version <br/>
 - ``` If you have an older installation of npm, please do not forget to update that. ```
 
 Clone the main UI repo
- - ``` https://github.com/Qortal/UI.git ```
+ - ``` git clone https://github.com/Qortal/UI.git ```
 
 Installation and linking
 ------------------------

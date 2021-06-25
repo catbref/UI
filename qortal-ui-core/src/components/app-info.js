@@ -66,8 +66,8 @@ class AppInfo extends connect(store)(LitElement) {
                     width:100%;
                     padding-bottom:8px;
                 }
-                .green {
-                    color: green;
+                .blue {
+                    color: #03a9f4;
                     margin: 0;
                     font-size: 14px;
                     font-weight:200;
@@ -109,10 +109,10 @@ class AppInfo extends connect(store)(LitElement) {
 
     _renderStatus() {
         if (this.nodeStatus.isMintingPossible === true && this.nodeStatus.isSynchronizing === true) {
-            this.cssStatus = 'green'
+            this.cssStatus = 'blue'
             return '(Minting)'
         } else if (this.nodeStatus.isMintingPossible === true && this.nodeStatus.isSynchronizing === false) {
-            this.cssStatus = 'green'
+            this.cssStatus = 'blue'
             return '(Minting)'
         } else if (this.nodeStatus.isMintingPossible === false && this.nodeStatus.isSynchronizing === true) {
             this.cssStatus = 'black'

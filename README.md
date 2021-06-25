@@ -27,15 +27,11 @@ Easiest way to install the lastest required packages is via nvm.
 Verify your installtion with node --version <br/>
 - ``` If you have an older installation of npm, please do not forget to update that. ```
 
+Clone the main UI repo
+ - ``` https://github.com/Qortal/UI.git ```
 
-Clone the following repos
- - ``` git clone https://github.com/Qortal/qortal-ui.git ```
- - ``` git clone https://github.com/Qortal/qortal-ui-core.git ```
- - ``` git clone https://github.com/Qortal/qortal-ui-plugins.git ```
- - ``` git clone https://github.com/Qortal/qortal-ui-crypto.git ```
-
-Dependency installation and linking
------------------------------------
+Installation and linking
+------------------------
 In `qortal-ui-core/`, `qortal-ui-plugins/`, `qortal-ui-crypto/`  directories, run: 
 ```
 yarn install

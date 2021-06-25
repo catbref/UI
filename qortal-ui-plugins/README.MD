@@ -1,3 +1,0 @@
-QortalUI plugins. 
-
-Incoming !!!!

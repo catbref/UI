@@ -1,9 +1,10 @@
 const path = require('path')
 
 const user = {
-	// management can be enabled as explicit for public API servers when needed
+		// management can be enabled as explicit for public API servers when needed
 	node: 1,
 	knownNodes: [
+		// Mainnet nodes
 		{
 			protocol: 'http',
 			domain: '127.0.0.1',
@@ -22,6 +23,7 @@ const user = {
 			port: 12391,
 			enableManagement: false,
 		},
+		// Testnet nodes
 		{
 			protocol: 'http',
 			domain: '127.0.0.1',

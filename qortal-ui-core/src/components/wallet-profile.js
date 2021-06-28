@@ -56,9 +56,11 @@ class WalletProfile extends connect(store)(LitElement) {
                 #blocksMinted {
                     margin:0;
                     margin-top: 0;
+                    font-size: 11px;
+                    color: #03a9f4;
                 }
                 #address {
-                    white-space: nowrap; 
+                    white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
 
@@ -75,7 +77,7 @@ class WalletProfile extends connect(store)(LitElement) {
                     <span id="accountName">
                         ${this.accountInfo.names.length !== 0 ? this.accountInfo.names[0].name : ''}
                     </span>
-                    ${this.accountInfo.addressInfo ? html`<span style="margin-bottom: 8px; display: inline-block;">Account Level - ${this.accountInfo.addressInfo.level} ${this.accountInfo.addressInfo.flags === 1 ? html`<strong>(F)</strong>` : ''}</span>` : ''}
+                    ${this.accountInfo.addressInfo ? html`<span style="margin-bottom: 8px; display: inline-block; font-size: 14px;">Minter Level - <span style="color: #03a9f4;">${this.accountInfo.addressInfo.level} ${this.accountInfo.addressInfo.flags === 1 ? html`<strong>(F)</strong>` : ''}</span>` : ''}
                     <p id="blocksMinted">Blocks Minted - ${this.accountInfo.addressInfo.blocksMinted + this.accountInfo.addressInfo.blocksMintedAdjustment}</p>
                     <p id="address">${this.wallet.addresses[0].address}</p>
                 </div>

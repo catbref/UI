@@ -132,7 +132,8 @@ if (!isLock) {
             title: 'Error while Updating...',
             body: err
         })
-        n.show()
+        // n.show()
+        // temporarily disabled notification
     })
 
     autoUpdater.on('update-downloaded', () => {

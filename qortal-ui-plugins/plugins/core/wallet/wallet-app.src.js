@@ -222,7 +222,6 @@ class MultiWallet extends LitElement {
 				.wallet-header {
 					margin: 0 50px;
 					display: flex;
-					justify-content: space-between;
 				}
 
 				.transactions-wrapper {
@@ -536,8 +535,9 @@ class MultiWallet extends LitElement {
 
 				<div class="transactions-wrapper">
 					<h2 class="wallet-header">
-						Current Wallet
 						<div class="">
+							Current Wallet
+							<br />
 							<span style="display: block; font-size: 18px; color: rgb(68, 71, 80); margin-bottom: 6px;"> ${this.selectedWallet.type === 'qort' ? this.selectedWallet.wallet.address : this.selectedWallet.wallet.address} </span>
 							<span class="total-balance"> ${this.balanceString} </span>
 						</div>

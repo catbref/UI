@@ -4,6 +4,13 @@ const user = {
 		// management can be enabled as explicit for public API servers when needed
 	node: 1,
 	knownNodes: [
+		// Localhost Testnet node
+		{
+			protocol: 'http',
+			domain: '127.0.0.1',
+			port: 62391,
+			enableManagement: false,
+		},
 		// Mainnet nodes
 		{
 			protocol: 'http',
@@ -26,12 +33,6 @@ const user = {
 		// Testnet nodes
 		{
 			protocol: 'http',
-			domain: '127.0.0.1',
-			port: 62391,
-			enableManagement: false,
-		},
-		{
-			protocol: 'http',
 			domain: 'node1.qortal.org',
 			port: 62391,
 			enableManagement: false,
@@ -46,7 +47,7 @@ const user = {
 	nodeSettings: {
 		pingInterval: 10 * 1000, // (10 secs)
 	},
-	version: 'v1.4.1', // TODO: Set this dynamically...
+	version: 'v1.4.2', // TODO: Set this dynamically...
 	language: 'english', // default...english
 	theme: 'light',
 	server: {

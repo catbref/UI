@@ -1,4 +1,4 @@
-const babel = require('rollup-plugin-babel');
+const babel = require('@rollup/plugin-babel');
 const resolve = require('@rollup/plugin-node-resolve');
 const replace = require('@rollup/plugin-replace');
 const commonjs = require('rollup-plugin-commonjs');
@@ -36,7 +36,8 @@ const generateRollupConfig = (file, { outputDir, aliases }) => {
                 }),
                 commonjs(),
                 progress(),
-                babel({
+                babel.babel({
+                    babelHelpers: 'bundled',
                     exclude: 'node_modules/**'
                 }),
                 terser({

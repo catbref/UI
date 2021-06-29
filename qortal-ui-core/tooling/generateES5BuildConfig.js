@@ -1,11 +1,11 @@
 const babel = require('rollup-plugin-babel');
-const resolve = require('rollup-plugin-node-resolve');
-const replace = require('rollup-plugin-replace');
+const resolve = require('@rollup/plugin-node-resolve');
+const replace = require('@rollup/plugin-replace');
 const commonjs = require('rollup-plugin-commonjs');
 const progress = require('rollup-plugin-progress');
 const { terser } = require("rollup-plugin-terser");
 const path = require('path');
-const alias = require('rollup-plugin-alias');
+const alias = require('@rollup/plugin-alias');
 
 const generateRollupConfig = (file, { outputDir, aliases }) => {
 
@@ -23,6 +23,7 @@ const generateRollupConfig = (file, { outputDir, aliases }) => {
                     mainFields: ['module', 'browser']
                 }),
                 replace({
+                    preventAssignment: true,
                     "process.env.NODE_ENV": JSON.stringify("production"),
                 }),
                 alias({

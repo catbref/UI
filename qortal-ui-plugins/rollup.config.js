@@ -2,7 +2,7 @@
 
 import babel from 'rollup-plugin-babel'
 
-import resolve from 'rollup-plugin-node-resolve'
+import resolve from '@rollup/plugin-node-resolve'
 import builtins from 'rollup-plugin-node-builtins'
 import globals from 'rollup-plugin-node-globals'
 import commonjs from 'rollup-plugin-commonjs'

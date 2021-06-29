@@ -1,10 +1,10 @@
 const path = require('path')
-const resolve = require('rollup-plugin-node-resolve')
+const resolve = require('@rollup/plugin-node-resolve')
 const progress = require('rollup-plugin-progress')
-const replace = require('rollup-plugin-replace')
+const replace = require('@rollup/plugin-replace')
 const globals = require('rollup-plugin-node-globals')
 const commonjs = require('rollup-plugin-commonjs')
-const alias = require('rollup-plugin-alias')
+const alias = require('@rollup/plugin-alias')
 const { terser } = require('rollup-plugin-terser')
 
 const scss = require('rollup-plugin-scss')
@@ -57,6 +57,7 @@ const generateBuildConfig = ({ elementComponents, functionalComponents, otherOut
                     mainFields: ['module', 'browser']
                 }),
                 replace({
+                    preventAssignment: true,
                     "process.env.NODE_ENV": JSON.stringify("production"),
                 }),
                 commonjs(),

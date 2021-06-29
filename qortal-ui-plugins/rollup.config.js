@@ -1,6 +1,6 @@
 // From original frag-ui build
 
-import babel from 'rollup-plugin-babel'
+import babel from '@rollup/plugin-babel'
 
 import resolve from '@rollup/plugin-node-resolve'
 import builtins from 'rollup-plugin-node-builtins'
@@ -23,6 +23,7 @@ const sassOptions = {
 }
 
 const babelOptions = {
+    babelHelpers: 'bundled',
     // exclude: 'node_modules/**',
     exclude: ['node_modules/babel-runtime/**', /[\/\\]core-js/, 'node_modules/@babel/runtime-corejs3/**', 'node_modules/@webcomponentsjs/**'],
     // exclude: 'node_modules/core-js/**',
@@ -82,7 +83,7 @@ export default [
             }
         ],
         plugins: plugins.concat([
-            babel(babelOptions)
+            babel.babel(babelOptions)
         ])
     },
     {
@@ -95,7 +96,7 @@ export default [
             }
         ],
         plugins: plugins.concat([
-            babel(babelOptions)
+            babel.babel(babelOptions)
         ])
     },
     {
@@ -108,7 +109,7 @@ export default [
             }
         ],
         plugins: plugins.concat([
-            babel(babelOptions)
+            babel.babel(babelOptions)
         ])
     },
     {
@@ -144,7 +145,7 @@ export default [
             }
         ],
         plugins: plugins.concat([
-            babel(babelOptions)
+            babel.babel(babelOptions)
         ])
     },
     {
@@ -157,7 +158,7 @@ export default [
             }
         ],
         plugins: plugins.concat([
-            babel(babelOptions)
+            babel.babel(babelOptions)
         ])
     },
     {
@@ -170,7 +171,7 @@ export default [
             }
         ],
         plugins: plugins.concat([
-            babel(babelOptions)
+            babel.babel(babelOptions)
         ])
     },
     {
@@ -183,7 +184,7 @@ export default [
             }
         ],
         plugins: plugins.concat([
-            babel(babelOptions)
+            babel.babel(babelOptions)
         ])
     }
 ]

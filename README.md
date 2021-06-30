@@ -40,7 +40,6 @@ yarn link
 
 Finally, in the `qortal-ui` directory, run:
 ```
-yarn install
 yarn link qortal-ui-core
 yarn link qortal-ui-plugins
 yarn link qortal-ui-crypto

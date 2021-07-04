@@ -255,6 +255,9 @@ class NodeManagement extends LitElement {
                 <vaadin-grid-column path="lastHeight"></vaadin-grid-column>
                 <vaadin-grid-column path="version" header="Build Version"></vaadin-grid-column>
                 <vaadin-grid-column path="age" header="Connected for"></vaadin-grid-column>
+				<vaadin-grid-column  width="12em" header="Action" .renderer=${(root, column, data) => {
+                    render(html`<mwc-button class="red" @click=${() => this.removePeer(data.item.address, data.index)}><mwc-icon>delete</mwc-icon>Remove Peer</mwc-button>`, root)
+                }}></vaadin-grid-column>
             </vaadin-grid>
 
             ${this.isEmptyArray(this.peers) ? html` Node has no connected peers ` : ""}
@@ -265,6 +268,25 @@ class NodeManagement extends LitElement {
     `;
   }
 
+  removePeer(peerAddress, rowIndex) {
+    parentEpml
+      .request("apiCall", {
+        url: `/peers`,
+        method: "DELETE",
+        body: peerAddress,
+      })
+      .then((res) => {
+        parentEpml.request('showSnackBar', "Successfully removed Peer: " + peerAddress );
+        this.peers.splice(rowIndex, 1);
+      });
+  }
+
+  removePeerBtnRender(root, column, rowData) {
+    render(html`
+      <mwc-button class="red" @click=${this.removePeer}" slot="primaryAction"> Remove Peer </mwc-button>
+      `,root);
+  }
+	
   onPageNavigation(pageUrl) {
     parentEpml.request("setPageUrl", pageUrl);
   }

@@ -14,7 +14,7 @@ Packages required:
  - npm
  - yarn
 
-Easiest way to install the lastest required packages is via nvm. 
+Easiest way to install the lastest required packages on Linux is via nvm. 
 
 ``` sudo apt update && sudo apt install curl -y ``` <br/>
 ``` curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash ``` <br/>
@@ -23,6 +23,8 @@ Easiest way to install the lastest required packages is via nvm.
 ``` nvm ls-remote ``` (Fetch list of available versions) <br/>
 ``` nvm install v14.17.0 ```  (Latest LTS: Fermium as of writing) <br/>
 ``` npm -g install yarn ``` <br/> 
+
+On BSD do a ``` pkg_add node followed by npm install -g yarn ```
 
 Verify your installtion with node --version <br/>
 - ``` If you have an older installation of npm, please do not forget to update that with npm update -g. ```

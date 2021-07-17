@@ -26,6 +26,8 @@ Easiest way to install the lastest required packages on Linux is via nvm.
 
 On BSD do a ``` pkg_add node followed by npm install -g yarn ```
 
+Adding via binary package mirror will only work if you have set the package path. You can do a node or java build via ports instead. 
+
 Verify your installtion with node --version <br/>
 - ``` If you have an older installation of npm, please do not forget to update that with npm update -g. ```
 

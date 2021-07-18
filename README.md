@@ -70,3 +70,17 @@ Run UI using electron
 ```
 yarn run start-electron
 ```
+
+Build script (unix-like systems only)
+-------------------------------------
+To automate the above process, run ./build.sh, optionally specifying the following options:
+
+`-s`: run UI server after completing the build<br />
+`-e`: run electron server after completing the build<br />
+`-f`: force relink and reinstall dependencies<br />
+`-h`: show help<br />
+
+Example command to build and run the UI server:
+```
+./build.sh -s
+```

@@ -7,7 +7,30 @@ const path = require('path')
 process.env['APP_PATH'] = app.getAppPath()
 const server = require('./server.js')
 
-Menu.setApplicationMenu(null)
+const editMenu = Menu.buildFromTemplate([
+    {
+        label: "Qortal", 
+        submenu: [{
+            label: "Quit", 
+            click() {
+                app.quit();
+            }
+        }
+        ]
+    },{
+       label: "Edit",
+       submenu: [
+         {label: "Undo", accelerator: "CommandOrControl+Z", selector: "undo:"},
+         {label: "Redo", accelerator: "CommandOrControl+Shift+Z", selector: "redo:"},
+         {type: "separator"},
+         {label: "Cut", accelerator: "CommandOrControl+X", selector: "cut:"},
+         {label: "Copy", accelerator: "CommandOrControl+C", selector: "copy:"},
+         {label: "Paste", accelerator: "CommandOrControl+V", selector: "paste:"},
+         {label: "Select All", accelerator: "CommandOrControl+A", selector: "selectAll:"}
+        ]
+    }
+])
+Menu.setApplicationMenu(editMenu) //@proto
 
 let myWindow = null
 

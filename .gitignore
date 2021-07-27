@@ -1,2 +1,6 @@
 # Yarn
 yarn.lock
+
+# Derived js files
+*.js
+!*.src.js

@@ -9,6 +9,7 @@ import utils from './deps/utils.js'
 
 import BitcoinHDWallet from './bitcoin/BitcoinHDWallet.js';
 import LitecoinHDWallet from './bitcoin/LitecoinHDWallet.js';
+import DogecoinHDWallet from './bitcoin/DogecoinHDWallet.js';
 
 import { generateSaveWalletData } from './storeWallet.js'
 
@@ -103,10 +104,15 @@ export default class PhraseWallet {
         const ltcSeed = [...addrSeed];
         const ltcWallet = new LitecoinHDWallet().createWallet(new Uint8Array(ltcSeed));
 
+        // Create Dogecoin HD Wallet 
+        const dogeSeed = [...addrSeed];
+        const dogeWallet = new DogecoinHDWallet().createWallet(new Uint8Array(dogeSeed));
+
         this._addresses[nonce] = {
             address,
             btcWallet,
             ltcWallet,
+            dogeWallet,
             qoraAddress,
             keyPair: {
                 publicKey: addrKeyPair.publicKey,

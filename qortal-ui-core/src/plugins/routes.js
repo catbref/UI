@@ -18,6 +18,7 @@ const deleteTradeOffer = api.deleteTradeOffer
 const cancelAllOffers = api.cancelAllOffers
 const sendBtc = api.sendBtc
 const sendLtc = api.sendLtc
+const sendDoge = api.sendDoge
 
 export const routes = {
 	hello: async (req) => {
@@ -262,6 +263,19 @@ export const routes = {
 		let response
 		try {
 			const res = await sendLtc(req.data)
+			response = res
+		} catch (e) {
+			console.error(e)
+			console.error(e.message)
+			response = e.message
+		}
+		return response
+	},
+
+	sendDoge: async (req) => {
+		let response
+		try {
+			const res = await sendDoge(req.data)
 			response = res
 		} catch (e) {
 			console.error(e)

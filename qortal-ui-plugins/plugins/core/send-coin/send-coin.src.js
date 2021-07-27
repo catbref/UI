@@ -27,6 +27,7 @@ class SendMoneyPage extends LitElement {
 			qortBalance: { type: Number },
 			btcBalance: { type: Number },
 			ltcBalance: { type: Number },
+			dogeBalance: { type: Number },
 			selectedCoin: { type: String },
 			satFeePerByte: { type: Number },
 		}
@@ -126,6 +127,7 @@ class SendMoneyPage extends LitElement {
 							<mwc-list-item value="qort">QORT</mwc-list-item>
 							<mwc-list-item value="btc">BTC</mwc-list-item>
 							<mwc-list-item value="ltc">LTC</mwc-list-item>
+							<mwc-list-item value="doge">DOGE</mwc-list-item>
 						</mwc-select>
 					</p>
 					<p>
@@ -266,6 +268,8 @@ class SendMoneyPage extends LitElement {
 			this.sendBtc()
 		} else if (this.selectedCoin === 'ltc') {
 			this.sendLtc()
+		} else if (this.selectedCoin === 'doge') {
+			this.sendDoge()
 		}
 	}
 
@@ -495,6 +499,53 @@ class SendMoneyPage extends LitElement {
 		manageResponse(res)
 	}
 
+	async sendDoge() {
+		const amount = this.shadowRoot.getElementById('amountInput').value
+		let recipient = this.shadowRoot.getElementById('recipient').value
+		const xprv58 = this.selectedAddress.dogeWallet.derivedMasterPrivateKey
+
+		this.sendMoneyLoading = true
+		this.btnDisable = true
+
+		const makeRequest = async () => {
+			const opts = {
+				xprv58: xprv58,
+				receivingAddress: recipient,
+				dogecoinAmount: amount,
+				feePerByte: (this.satFeePerByte / 1e8).toFixed(8),
+			}
+			const response = await parentEpml.request('sendDoge', opts)
+			return response
+		}
+
+		const manageResponse = (response) => {
+			if (response.length === 64) {
+				this.shadowRoot.getElementById('amountInput').value = 0
+				this.shadowRoot.getElementById('recipient').value = ''
+				this.errorMessage = ''
+				this.recipient = ''
+				this.amount = 0
+				this.successMessage = 'Transaction Successful!'
+				this.sendMoneyLoading = false
+				this.btnDisable = false
+			} else if (response === false) {
+				this.errorMessage = 'Transaction Failed!'
+				this.sendMoneyLoading = false
+				this.btnDisable = false
+				throw new Error(txnResponse)
+			} else {
+				this.errorMessage = response.message
+				this.sendMoneyLoading = false
+				this.btnDisable = false
+				throw new Error(response)
+			}
+		}
+
+		// Call makeRequest
+		const res = await makeRequest()
+		manageResponse(res)
+	}
+
 	_textMenu(event) {
 		const getSelectedText = () => {
 			var text = ''
@@ -547,10 +598,14 @@ class SendMoneyPage extends LitElement {
 		this.ltcSatMinFee = 10
 		this.ltcSatMaxFee = 100
 		this.ltcDefaultFee = 30 // Set to 30 LTC-per-sat
+		this.dogeSatMinFee = 10
+		this.dogeSatMaxFee = 100
+		this.dogeDefaultFee = 30 // Set to 30 LTC-per-sat
 		this.isValidAmount = false
 		this.qortBalance = 0
 		this.btcBalance = 0
 		this.ltcBalance = 0
+		this.dogeBalance = 0
 		this.selectedCoin = 'invalid'
 
 		let configLoaded = false
@@ -591,6 +646,9 @@ class SendMoneyPage extends LitElement {
 
 		// Get LTC Balance
 		this.updateLTCAccountBalance()
+
+		// Get DOGE Balance
+		this.updateDOGEAccountBalance()
 
 		window.addEventListener('contextmenu', (event) => {
 			event.preventDefault()
@@ -699,6 +757,15 @@ class SendMoneyPage extends LitElement {
 			this.shadowRoot.getElementById('feeSlider').min = this.ltcSatMinFee
 			this.shadowRoot.getElementById('feeSlider').max = this.ltcSatMaxFee
 			this.satFeePerByte = this.ltcDefaultFee
+		} else if (coinType === 'doge') {
+			this.shadowRoot.getElementById('balance').textContent = `${this.dogeBalance} DOGE`
+			this.shadowRoot.getElementById('address').textContent = this.selectedAddress.dogeWallet.address
+			this.shadowRoot.querySelector('.selectedBalance').style.display = 'block'
+			this.shadowRoot.getElementById('amountInput').label = 'Amount (DOGE)'
+			this.shadowRoot.getElementById('recipient').label = 'To (DOGE address)'
+			this.shadowRoot.getElementById('feeSlider').min = this.dogeSatMinFee
+			this.shadowRoot.getElementById('feeSlider').max = this.dogeSatMaxFee
+			this.satFeePerByte = this.dogeDefaultFee
 		} else {
 			this.selectedCoin = 'invalid'
 		}
@@ -732,6 +799,22 @@ class SendMoneyPage extends LitElement {
 					parentEpml.request('showSnackBar', 'Failed to Fetch LTC Balance. Try again!')
 				} else {
 					this.ltcBalance = (Number(res) / 1e8).toFixed(8)
+				}
+			})
+	}
+
+	updateDOGEAccountBalance() {
+		parentEpml
+			.request('apiCall', {
+				url: `/crosschain/doge/walletbalance`,
+				method: 'POST',
+				body: window.parent.reduxStore.getState().app.selectedAddress.dogeWallet.derivedMasterPublicKey,
+			})
+			.then((res) => {
+				if (isNaN(Number(res))) {
+					parentEpml.request('showSnackBar', 'Failed to Fetch DOGE Balance. Try again!')
+				} else {
+					this.dogeBalance = (Number(res) / 1e8).toFixed(8)
 				}
 			})
 	}

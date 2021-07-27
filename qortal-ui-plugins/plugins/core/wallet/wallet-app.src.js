@@ -362,6 +362,10 @@ class MultiWallet extends LitElement {
 					background-image: url('/img/ltc.png');
 				}
 
+				.doge .currency-image {
+					background-image: url('/img/doge.png');
+				}
+
 				.card-list {
 					margin-top: 20px;
 				}
@@ -476,6 +480,7 @@ class MultiWallet extends LitElement {
 		this.qortWallet = {}
 		this.btcWallet = {}
 		this.ltcWallet = {}
+		this.dogeWallet = {}
 		this.selectedTransaction = {}
 		this.isTextMenuOpen = false
 		this.loading = true
@@ -485,6 +490,7 @@ class MultiWallet extends LitElement {
 		this.qortWallet = window.parent.reduxStore.getState().app.selectedAddress
 		this.btcWallet = window.parent.reduxStore.getState().app.selectedAddress.btcWallet
 		this.ltcWallet = window.parent.reduxStore.getState().app.selectedAddress.ltcWallet
+		this.dogeWallet = window.parent.reduxStore.getState().app.selectedAddress.dogeWallet
 
 		this.selectedWallet = {
 			type: 'qort',
@@ -499,6 +505,7 @@ class MultiWallet extends LitElement {
 				this.qortWallet = selectedAddress
 				this.btcWallet = selectedAddress.btcWallet
 				this.ltcWallet = selectedAddress.ltcWallet
+				this.dogeWallet = selectedAddress.dogeWallet
 
 				// this.updateAccountTransactions();
 			})
@@ -529,6 +536,10 @@ class MultiWallet extends LitElement {
 						<div type="ltc" class="currency-box ltc">
 							<div class="currency-image"></div>
 							<div class="currency-text">Litecoin</div>
+						</div>
+						<div type="doge" class="currency-box doge">
+							<div class="currency-image"></div>
+							<div class="currency-text">Dogecoin</div>
 						</div>
 					</div>
 				</div>
@@ -897,6 +908,13 @@ class MultiWallet extends LitElement {
 				type: target.attributes.type.value,
 				currencyBox: target,
 				wallet: this.ltcWallet,
+			}
+			this.showBTCLikeWallet()
+		} else if (target.attributes.type.value === 'doge') {
+			this.selectedWallet = {
+				type: target.attributes.type.value,
+				currencyBox: target,
+				wallet: this.dogeWallet,
 			}
 			this.showBTCLikeWallet()
 		}

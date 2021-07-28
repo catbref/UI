@@ -4,3 +4,6 @@ yarn.lock
 # Derived js files
 *.js
 !*.src.js
+
+# Mac .DS_Store files
+.DS_Store

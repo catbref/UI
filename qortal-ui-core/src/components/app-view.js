@@ -54,7 +54,9 @@ class AppView extends connect(store)(LitElement) {
                 flex-direction: column;
                 justify-content: space-between;
             }
-
+            .sideBarMenu{
+                overflow-y:scroll;
+            }
             #sideBar::-webkit-scrollbar {
                 width: 7px;
                 background-color: transparent;
@@ -84,11 +86,9 @@ class AppView extends connect(store)(LitElement) {
                     <div id="sideBar">
                         <div>
                             <wallet-profile></wallet-profile>
-
-                            <sidenav-menu></sidenav-menu>
                         </div>
-
-                        <div>
+                        <div class="sideBarMenu">
+                            <sidenav-menu></sidenav-menu>
                             <app-info></app-info>
                         </div>
                     </div>

@@ -72,6 +72,10 @@ const generateForPlugins = () => {
       out: "plugins/core/trade-portal/trade-portal.js",
     },
     {
+      in: "plugins/core/trade-portal-doge/trade-portal-doge.src.js",
+      out: "plugins/core/trade-portal-doge/trade-portal-doge.js",
+    },
+    {
       in: "plugins/core/send-coin/send-coin.src.js",
       out: "plugins/core/send-coin/send-coin.js",
     },

@@ -135,7 +135,7 @@ class SendMoneyPage extends LitElement {
 							style="width:100%;"
 							id="amountInput"
 							required
-							label="Amount (qort)"
+							label="Amount (QORT)"
 							@input=${(e) => {
 								this._checkAmount(e)
 							}}

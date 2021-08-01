@@ -1152,7 +1152,7 @@ class TradePortal extends LitElement {
 
 		const initTradeBotWebSocket = (restarted = false) => {
 			let socketTimeout
-			let socketLink = `ws://NODEURL/websockets/crosschain/tradebot`
+			let socketLink = `ws://NODEURL/websockets/crosschain/tradebot?foreignBlockchain=FOREIGN_BLOCKCHAIN`
 			const socket = new WebSocket(socketLink)
 			// Open Connection
 			socket.onopen = () => {

@@ -288,7 +288,7 @@ class Chat extends LitElement {
             <div class="container clearfix">
                 <div class="people-list" id="people-list">
                 <div class="search">
-                    <div class="create-chat" @click=${() => this.shadowRoot.querySelector('#startChatDialog').show()}> Create Chat </div>
+                    <div class="create-chat" @click=${() => this.shadowRoot.querySelector('#startChatDialog').show()}> New Private Message </div>
                 </div>
                 <ul class="list">
                     ${this.isEmptyArray(this.chatHeads) ? "Loading..." : this.renderChatHead(this.chatHeads)}
@@ -309,11 +309,11 @@ class Chat extends LitElement {
             <!-- Start Chatting Dialog -->
                 <mwc-dialog id="startChatDialog" scrimClickAction="${this.isLoading ? '' : 'close'}">
                     <div style="text-align:center">
-                        <h1>Start a New Chat</h1>
+                        <h1>New Private Message</h1>
                         <hr>
                     </div>
 
-                    <p> Type the address of who you want to start chatting with to create a chat!</p>
+                    <p> Type the name or address of who you want to chat with to send a private message!</p>
                     
                     <textarea class="input" ?disabled=${this.isLoading} id="sendTo" placeholder="Name / Address" rows="1"></textarea>
                     <p style="margin-bottom:0;">

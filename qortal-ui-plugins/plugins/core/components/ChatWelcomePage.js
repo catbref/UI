@@ -179,18 +179,18 @@ class ChatWelcomePage extends LitElement {
                     <div class="center-box">
                         <mwc-icon class="img-icon">account_circle</mwc-icon>
                         <span style="font-size: 20px;">${this.myAddress.address}</span>
-                        <div class="start-chat" @click=${() => this.shadowRoot.querySelector('#startChatDialog').show()}> Start Chat </div>
+                        <div class="start-chat" @click=${() => this.shadowRoot.querySelector('#startChatDialog').show()}> New Private Message </div>
                     </div>
                 </div>
                 
                                 <!-- Start Chatting Dialog -->
                 <mwc-dialog id="startChatDialog" scrimClickAction="${this.isLoading ? '' : 'close'}">
                     <div style="text-align:center">
-                        <h1>Start a New Chat</h1>
+                        <h1>New Private Message</h1>
                         <hr>
                     </div>
 
-                    <p> Type the address of who you want to start chatting with to create a chat!</p>
+                    <p> Type the name or address of who you want to chat with to send a private message!</p>
                     
                     <textarea class="input" ?disabled=${this.isLoading} id="sendTo" placeholder="Name / Address" rows="1"></textarea>
                     <p style="margin-bottom:0;">

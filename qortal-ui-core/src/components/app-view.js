@@ -52,10 +52,9 @@ class AppView extends connect(store)(LitElement) {
                 display: flex;
                 flex: 1 1;
                 flex-direction: column;
-                justify-content: space-between;
             }
             .sideBarMenu{
-                overflow-y:scroll;
+                overflow-y: auto;
             }
             #sideBar::-webkit-scrollbar {
                 width: 7px;

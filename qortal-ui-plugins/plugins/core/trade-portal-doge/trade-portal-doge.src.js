@@ -1089,7 +1089,7 @@ class TradePortal extends LitElement {
 					let offerIndex = offeringTrades.findIndex((offeringTrade) => offeringTrade.qortalCreatorTradeAddress === presence.address)
 					offerIndex !== -1 ? (offeringTrades[offerIndex].lastSeen = presence.timestamp) : null
 				})
-				filteredOffers = offeringTrades; //.filter((offeringTrade) => lessThanThirtyMinsAgo(offeringTrade.lastSeen))
+				filteredOffers = offeringTrades.filter((offeringTrade) => lessThanThirtyMinsAgo(offeringTrade.lastSeen))
 
 				self.postMessage({ type: 'PRESENCE', data: { offers: offeringTrades, filteredOffers: filteredOffers } })
 				filteredOffers = []

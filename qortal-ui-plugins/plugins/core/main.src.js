@@ -33,16 +33,7 @@ parentEpml.ready().then(() => {
             url: 'trade-portal',
             domain: 'core',
             page: 'trade-portal/index.html',
-            title: 'Trade Portal (LTC)',
-            icon: 'toc',
-            menus: [],
-            parent: false
-        },
-        {
-            url: 'trade-portal-doge',
-            domain: 'core',
-            page: 'trade-portal-doge/index.html',
-            title: 'Trade Portal (DOGE)',
+            title: 'Trade Portal',
             icon: 'toc',
             menus: [],
             parent: false

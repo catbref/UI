@@ -14,30 +14,25 @@ import '@vaadin/vaadin-grid/vaadin-grid-sorter'
 import '@vaadin/vaadin-grid/theme/material/all-imports.js'
 
 const parentEpml = new Epml({ type: 'WINDOW', source: window.parent })
+let workers = new Map()
 
 class TradePortal extends LitElement {
 	static get properties() {
 		return {
 			selectedAddress: { type: Object },
 			config: { type: Object },
-			qortBalance: { type: String },
-			ltcBalance: { type: String },
+			listedCoins: { type: Map },
 			sellBtnDisable: { type: Boolean },
 			isSellLoading: { type: Boolean },
 			isBuyLoading: { type: Boolean },
 			buyBtnDisable: { type: Boolean },
 			initialAmount: { type: Number },
-			openOrders: { type: Array },
-			openFilteredOrders: { type: Array },
-			historicTrades: { type: Array },
-			myOrders: { type: Array },
-			myHistoricTrades: { type: Array },
-			tradeOffersSocketCounter: { type: Number },
 			cancelBtnDisable: { type: Boolean },
-			myOfferingOrders: { type: Array },
-			openTradeOrders: { type: Array },
 			cancelStuckOfferBtnDisable: { type: Boolean },
-			_foreignBlockchain: { type: String },
+			selectedCoin: { type: String },
+			isLoadingHistoricTrades: { type: Boolean },
+			isLoadingOpenTrades: { type: Boolean },
+			isLoadingMyOpenOrders: { type: Boolean },
 		}
 	}
 
@@ -249,7 +244,48 @@ class TradePortal extends LitElement {
 				height: 100px;
 				text-align: center;
 			}
-
+			.loadingContainer {
+				height: 100%;
+				width: 100%;
+			}
+			.loading,
+			.loading:after {
+			  border-radius: 50%;
+			  width: 5em;
+			  height: 5em;
+			}
+			.loading {
+				margin: 45% auto;
+				border-width: .6em;
+				border-style: solid;
+				border-color: rgba(3, 169, 244, 0.2) rgba(3, 169, 244, 0.2) rgba(3, 169, 244, 0.2) rgb(3, 169, 244);
+				font-size: 10px;
+				position: relative;
+				text-indent: -9999em;
+				transform: translateZ(0px);
+				animation: 1.1s linear 0s infinite normal none running loadingAnimation;
+			}
+			@-webkit-keyframes loadingAnimation {
+			  0% {
+				-webkit-transform: rotate(0deg);
+				transform: rotate(0deg);
+			  }
+			  100% {
+				-webkit-transform: rotate(360deg);
+				transform: rotate(360deg);
+			  }
+			}
+			@keyframes loadingAnimation {
+			  0% {
+				-webkit-transform: rotate(0deg);
+				transform: rotate(0deg);
+			  }
+			  100% {
+				-webkit-transform: rotate(360deg);
+				transform: rotate(360deg);
+			  }
+			}
+			
 			@media (min-width: 701px) {
 				* {
 					/* margin: 0;
@@ -297,266 +333,312 @@ class TradePortal extends LitElement {
 
 	constructor() {
 		super()
+		let qortal = {
+			name: "QORTAL",
+			balance: "0",
+			coinCode: "QORT",
+		}
+
+		let litecoin = {
+			name: "LITECOIN",
+			balance: "0",
+			coinCode: "LTC",
+			openOrders: [],
+			openFilteredOrders: [],
+			historicTrades: [],
+			myOrders: [],
+			myHistoricTrades: [],
+			myOfferingOrders: [],
+			openTradeOrders: null,
+			tradeOffersSocketCounter: 1
+		}
+		let dogecoin = {
+			name: "DOGEECOIN",
+			balance: "0",
+			coinCode: "DOGE",
+			openOrders: [],
+			openFilteredOrders: [],
+			historicTrades: [],
+			myOrders: [],
+			myHistoricTrades: [],
+			myOfferingOrders: [],
+			openTradeOrders: null,
+			tradeOffersSocketCounter: 1
+		}
+		this.listedCoins = new Map()
+		this.listedCoins.set("QORTAL", qortal)
+		this.listedCoins.set("LITECOIN", litecoin)
+		this.listedCoins.set("DOGECOIN", dogecoin)
+
+		this.selectedCoin = "LITECOIN"
+
+		workers.set("QORTAL", {
+			tradesConnectedWorker: null,
+			handleStuckTradesConnectedWorker: null
+		})
+		workers.set("LITECOIN", {
+			tradesConnectedWorker: null,
+			handleStuckTradesConnectedWorker: null
+		})
+		workers.set("DOGECOIN", {
+			tradesConnectedWorker: null,
+			handleStuckTradesConnectedWorker: null
+		})
+
+
 		this.selectedAddress = {}
 		this.config = {}
-		this.qortBalance = '0'
-		this.ltcBalance = '0'
 		this.sellBtnDisable = false
 		this.isSellLoading = false
 		this.buyBtnDisable = true
 		this.isBuyLoading = false
 		this.initialAmount = 0
-		this.openOrders = []
-		this.openFilteredOrders = []
-		this.historicTrades = []
-		this.myOrders = []
-		this.myHistoricTrades = []
-		this.tradeOffersSocketCounter = 0
 		this.cancelBtnDisable = false
-		this.myOfferingOrders = []
-		this.openTradeOrders = []
 		this.cancelStuckOfferBtnDisable = false
-		this._foreignBlockchain = 'LITECOIN'
+		this.isLoadingHistoricTrades = true
+		this.isLoadingOpenTrades = true
+		this.isLoadingMyOpenOrders = false
 	}
 
-	// TODO: Spllit this large chunk of code into individual components
+	// TODO: Move each template to a separate components! Maybe
+	historicTradesTemplate() {
+		return html`<div class="historic-trades">
+						<div class="box">
+							<header>HISTORIC MARKET TRADES</header>
+							<div class="border-wrapper">
+								<div class="loadingContainer" id="loadingHistoricTrades" style="display:${this.isLoadingHistoricTrades ? 'block' : 'none'}"><div class="loading">Loading...</div></div>
+								<vaadin-grid theme="compact column-borders row-stripes wrap-cell-content" id="historicTradesGrid" aria-label="Historic Trades" .items="${this.listedCoins.get(this.selectedCoin).historicTrades}">
+									<vaadin-grid-column resizable header="Amount (QORT)" path="qortAmount"></vaadin-grid-column>
+									<vaadin-grid-column
+										resizable
+										header="Price (${this.listedCoins.get(this.selectedCoin).coinCode})"
+										.renderer=${(root, column, data) => {
+				const price = this.round(parseFloat(data.item.foreignAmount) / parseFloat(data.item.qortAmount))
+				render(html`${price}`, root)
+			}}
+									>
+									</vaadin-grid-column>
+									<vaadin-grid-column
+										resizable
+										header="Total (${this.listedCoins.get(this.selectedCoin).coinCode})"
+										.renderer=${(root, column, data) => {
+				render(html`<span> ${data.item.foreignAmount} </span>`, root)
+			}}
+									>
+									</vaadin-grid-column>
+								</vaadin-grid>
+							</div>
+						</div>
+					</div>`;
+	}
 
-	render() {
+	openTradesTemplate() {
 		return html`
-			<div id="trade-portal-page">
-				<div style="min-height:48px; display: flex; padding-bottom: 6px; margin: 2px;">
-					<h2 style="margin: 0; flex: 1; padding-top: .1em; display: inline;">Trade Portal - QORT/LTC</h2>
-				</div>
+					<div class="open-trades">
+						<div class="box">
+							<header>
+								<span>OPEN MARKET SELL ORDERS</span>
+							</header>
+							<div class="border-wrapper">
+							<div class="loadingContainer" id="loadingHistoricTrades" style="display:${this.isLoadingOpenTrades ? 'block' : 'none'}"><div class="loading">Loading...</div></div>
 
-				<div id="trade-portal">
-					<div id="first-trade-section">
-						<div class="historic-trades">
-							<div class="box">
-								<header>HISTORIC MARKET TRADES</header>
-								<div class="border-wrapper">
-									<vaadin-grid theme="compact column-borders row-stripes wrap-cell-content" id="historicTradesGrid" aria-label="Historic Trades" .items="${this.historicTrades}">
-										<vaadin-grid-column resizable header="Amount (QORT)" path="qortAmount"></vaadin-grid-column>
-										<vaadin-grid-column
-											resizable
-											header="Price (LTC)"
-											.renderer=${(root, column, data) => {
-												const price = this.round(parseFloat(data.item.foreignAmount) / parseFloat(data.item.qortAmount))
-												render(html`${price}`, root)
-											}}
-										>
-										</vaadin-grid-column>
-										<vaadin-grid-column
-											resizable
-											header="Total (LTC)"
-											.renderer=${(root, column, data) => {
-												render(html`<span> ${data.item.foreignAmount} </span>`, root)
-											}}
-										>
-										</vaadin-grid-column>
-									</vaadin-grid>
-								</div>
+								<vaadin-grid multi-sort="true" theme="compact column-borders row-stripes wrap-cell-content" id="openOrdersGrid" aria-label="Open Orders" .items="${this.listedCoins.get(this.selectedCoin).openFilteredOrders}">
+									<vaadin-grid-column
+										auto-width
+										resizable
+										flex-grow="1"
+										header="Amount (QORT)"
+										id="qortAmountColumn"
+										path="qortAmount"
+										.renderer=${(root, column, data) => {
+				render(html`<span> ${this.round(data.item.qortAmount)} </span>`, root)
+			}}
+									>
+									</vaadin-grid-column>
+									<vaadin-grid-column
+										resizable
+										header="Price (${this.listedCoins.get(this.selectedCoin).coinCode})"
+										id="priceColumn"
+										path="price"
+										.renderer=${(root, column, data) => {
+				render(html`<span> ${this.round(data.item.price)} </span>`, root)
+			}}
+									>
+									</vaadin-grid-column>
+									<vaadin-grid-column
+										resizable
+										header="Total (${this.listedCoins.get(this.selectedCoin).coinCode})"
+										.renderer=${(root, column, data) => {
+				render(html`<span> ${data.item.foreignAmount} </span>`, root)
+			}}
+									>
+									</vaadin-grid-column>
+								</vaadin-grid>
 							</div>
 						</div>
-						<div class="open-trades">
-							<div class="box">
-								<header>
-									<span>OPEN MARKET SELL ORDERS</span>
-								</header>
-								<div class="border-wrapper">
-									<vaadin-grid multi-sort="true" theme="compact column-borders row-stripes wrap-cell-content" id="openOrdersGrid" aria-label="Open Orders" .items="${this.openFilteredOrders}">
-										<vaadin-grid-column
-											auto-width
-											resizable
-											flex-grow="1"
-											header="Amount (QORT)"
-											id="qprtAmountColumn"
-											path="qortAmount"
-											.renderer=${(root, column, data) => {
-												render(html`<span> ${this.round(data.item.qortAmount)} </span>`, root)
-											}}
-										>
-										</vaadin-grid-column>
-										<vaadin-grid-column
-											resizable
-											header="Price (LTC)"
-											id="priceColumn"
-											path="price"
-											.renderer=${(root, column, data) => {
-												render(html`<span> ${this.round(data.item.price)} </span>`, root)
-											}}
-										>
-										</vaadin-grid-column>
-										<vaadin-grid-column
-											resizable
-											header="Total (LTC)"
-											.renderer=${(root, column, data) => {
-												render(html`<span> ${data.item.foreignAmount} </span>`, root)
-											}}
-										>
-										</vaadin-grid-column>
-										<vaadin-grid-column
-											resizable
-											header="Seller"
-											.renderer=${(root, column, data) => {
-												render(html`<span> ${data.item.qortalCreator} </span>`, root)
-											}}
-										>
-										</vaadin-grid-column>
-									</vaadin-grid>
+					</div>
+					`;
+	}
+
+	openMarketTemplate() {//buy and sell tabs
+		return html`
+					<div class="open-market-container">
+						<div class="box">
+							<mwc-tab-bar id="tabs-1" activeIndex="0">
+								<mwc-tab id="tab-buy" label="Buy" @click=${(e) => this.displayTabContent('buy')}></mwc-tab>
+								<mwc-tab id="tab-sell" label="Sell" @click=${(e) => this.displayTabContent('sell')}></mwc-tab>
+							</mwc-tab-bar>
+							<div id="tabs-1-content">
+								<div id="tab-buy-content">
+								<div class="card">
+									<div style="margin-left: auto">
+										<mwc-icon-button class="btn-clear" title="Clear form" icon="clear_all" @click=${() => this.clearBuyForm()}></mwc-icon-button>
+									</div>
+									<p>
+										<mwc-textfield style="width:100%;" id="buyAmountInput" required readOnly label="Amount (QORT)" placeholder="0.0000" type="text" auto-validate="false" outlined value="${this.initialAmount}"> </mwc-textfield>
+									</p>
+									<p>
+										<mwc-textfield style="width:100%;" id="buyPriceInput" required readOnly label="Price Ea. (${this.listedCoins.get(this.selectedCoin).coinCode})" placeholder="0.0000" type="text" auto-validate="false" outlined value="${this.initialAmount}">
+										</mwc-textfield>
+									</p>
+									<p style="margin-bottom: 8px;">
+										<mwc-textfield style="width:100%;" id="buyTotalInput" required readOnly label="Total (${this.listedCoins.get(this.selectedCoin).coinCode})" placeholder="0.0000" type="text" auto-validate="false" outlined value="${this.initialAmount}"> </mwc-textfield>
+
+										<mwc-textfield style="display: none; visibility: hidden;" id="qortalAtAddress" required readOnly label="Qortal AT Address" type="text" auto-validate="false" outlined> </mwc-textfield>
+									</p>
+
+									<span class="you-have">You have: ${this.listedCoins.get(this.selectedCoin).balance} ${this.listedCoins.get(this.selectedCoin).coinCode}</span>
+
+									<div class="buttons">
+										<div>
+											<mwc-button class="buy-button" ?disabled=${this.buyBtnDisable} style="width:100%;" raised @click=${(e) => this.buyAction(e)}
+												>${this.isBuyLoading === false ? 'BUY' : html`<paper-spinner-lite active></paper-spinner-lite>`}</mwc-button
+											>
+										</div>
+									</div>
 								</div>
 							</div>
-						</div>
-						<div class="open-market-container">
-							<div class="box">
-								<mwc-tab-bar id="tabs-1" activeIndex="0">
-									<mwc-tab id="tab-buy" label="Buy" @click=${(e) => this.displayTabContent('buy')}></mwc-tab>
-									<mwc-tab id="tab-sell" label="Sell" @click=${(e) => this.displayTabContent('sell')}></mwc-tab>
-								</mwc-tab-bar>
-								<div id="tabs-1-content">
-									<div id="tab-buy-content">
+								<div id="tab-sell-content">
 									<div class="card">
 										<div style="margin-left: auto">
-											<mwc-icon-button class="btn-clear" title="Clear form" icon="clear_all" @click=${() => this.clearBuyForm()}></mwc-icon-button>
-										</div>
+											<mwc-icon-button class="btn-clear" title="Clear form" icon="clear_all" @click=${() => this.clearSellForm()}></mwc-icon-button>
+										</div>										
 										<p>
-											<mwc-textfield style="width:100%;" id="buyAmountInput" required readOnly label="Amount (QORT)" placeholder="0.0000" type="text" auto-validate="false" outlined value="${this.initialAmount}"> </mwc-textfield>
+											<mwc-textfield
+												style="width:100%;"
+												id="sellAmountInput"
+												required
+												label="Amount (QORT)"
+												placeholder="0.0000"
+												@input=${(e) => {
+				this._checkSellAmount(e)
+			}}
+												type="number"
+												auto-validate="false"
+												outlined
+												value="${this.initialAmount}"
+											>
+											</mwc-textfield>
 										</p>
 										<p>
-											<mwc-textfield style="width:100%;" id="buyPriceInput" required readOnly label="Price Ea. (LTC)" placeholder="0.0000" type="text" auto-validate="false" outlined value="${this.initialAmount}">
+											<mwc-textfield
+												style="width:100%;"
+												id="sellPriceInput"
+												required
+												label="Price Ea. (${this.listedCoins.get(this.selectedCoin).coinCode})"
+												placeholder="0.0000"
+												@input=${(e) => {
+				this._checkSellAmount(e)
+			}}
+												type="number"
+												auto-validate="false"
+												outlined
+												value="${this.initialAmount}"
+											>
 											</mwc-textfield>
 										</p>
 										<p style="margin-bottom: 8px;">
-											<mwc-textfield style="width:100%;" id="buyTotalInput" required readOnly label="Total (LTC)" placeholder="0.0000" type="text" auto-validate="false" outlined value="${this.initialAmount}"> </mwc-textfield>
-
-											<mwc-textfield style="display: none; visibility: hidden;" id="qortalAtAddress" required readOnly label="Qortal AT Address" type="text" auto-validate="false" outlined> </mwc-textfield>
+											<mwc-textfield style="width:100%;" id="sellTotalInput" required readOnly label="Total (${this.listedCoins.get(this.selectedCoin).coinCode})" placeholder="0.0000" type="text" auto-validate="false" outlined value="${this.initialAmount}"> </mwc-textfield>
 										</p>
 
-										<span class="you-have">You have: ${this.ltcBalance} LTC</span>
+										<span class="you-have">You have: ${this.listedCoins.get("QORTAL").coinCode} QORT</span>
 
 										<div class="buttons">
 											<div>
-												<mwc-button class="buy-button" ?disabled=${this.buyBtnDisable} style="width:100%;" raised @click=${(e) => this.buyAction(e)}
-													>${this.isBuyLoading === false ? 'BUY' : html`<paper-spinner-lite active></paper-spinner-lite>`}</mwc-button
+												<mwc-button class="sell-button" ?disabled=${this.sellBtnDisable} style="width:100%;" raised @click=${(e) => this.sellAction()}
+													>${this.isSellLoading === false ? 'SELL' : html`<paper-spinner-lite active></paper-spinner-lite>`}</mwc-button
 												>
-											</div>
-										</div>
-									</div>
-								</div>
-									<div id="tab-sell-content">
-										<div class="card">
-											<div style="margin-left: auto">
-												<mwc-icon-button class="btn-clear" title="Clear form" icon="clear_all" @click=${() => this.clearSellForm()}></mwc-icon-button>
-											</div>										
-											<p>
-												<mwc-textfield
-													style="width:100%;"
-													id="sellAmountInput"
-													required
-													label="Amount (QORT)"
-													placeholder="0.0000"
-													@input=${(e) => {
-														this._checkSellAmount(e)
-													}}
-													type="number"
-													auto-validate="false"
-													outlined
-													value="${this.initialAmount}"
-												>
-												</mwc-textfield>
-											</p>
-											<p>
-												<mwc-textfield
-													style="width:100%;"
-													id="sellPriceInput"
-													required
-													label="Price Ea. (LTC)"
-													placeholder="0.0000"
-													@input=${(e) => {
-														this._checkSellAmount(e)
-													}}
-													type="number"
-													auto-validate="false"
-													outlined
-													value="${this.initialAmount}"
-												>
-												</mwc-textfield>
-											</p>
-											<p style="margin-bottom: 8px;">
-												<mwc-textfield style="width:100%;" id="sellTotalInput" required readOnly label="Total (LTC)" placeholder="0.0000" type="text" auto-validate="false" outlined value="${this.initialAmount}"> </mwc-textfield>
-											</p>
-	
-											<span class="you-have">You have: ${this.qortBalance} QORT</span>
-	
-											<div class="buttons">
-												<div>
-													<mwc-button class="sell-button" ?disabled=${this.sellBtnDisable} style="width:100%;" raised @click=${(e) => this.sellAction()}
-														>${this.isSellLoading === false ? 'SELL' : html`<paper-spinner-lite active></paper-spinner-lite>`}</mwc-button
-													>
-												</div>
 											</div>
 										</div>
 									</div>
 								</div>
 							</div>
-							
 						</div>
-					</div>
+						
+					</div>`;
+	}
+	myOpenOrdersTemplate() {
+		return html`
+					<div class="my-open-orders">
+						<div class="box">
+							<header>
+								<span>MY ORDERS</span>
+								<mwc-icon-button icon="more_vert" @click=${() => this.showStuckOrdersDialog()}></mwc-icon-button>
+							</header>
+							<div class="border-wrapper">
+							<div class="loadingContainer" id="loadingHistoricTrades" style="display:${this.isLoadingMyOpenOrders ? 'block' : 'none'}"><div class="loading">Loading...</div></div>
 
-					<div id="second-trade-section">
-						<div class="my-open-orders">
-							<div class="box">
-								<header>
-									<span>MY ORDERS</span>
-									<mwc-icon-button icon="more_vert" @click=${() => this.showStuckOrdersDialog()}></mwc-icon-button>
-								</header>
-								<div class="border-wrapper">
-									<vaadin-grid theme="compact column-borders row-stripes wrap-cell-content" id="myOrdersGrid" aria-label="My Orders" .items="${this.myOrders}">
-										<vaadin-grid-column
-											resizable
-											header="Date"
-											.renderer=${(root, column, data) => {
-												const dateString = new Date(data.item.timestamp).toLocaleString()
-												render(html`${dateString}`, root)
-											}}
-										>
-										</vaadin-grid-column>
-										<vaadin-grid-column
-											resizable
-											header="Status"
-											.renderer=${(root, column, data) => {
-												render(html`<span id="${data.item.atAddress}"> ${data.item._tradeState} </span>`, root)
-											}}
-										>
-										</vaadin-grid-column>
-										<vaadin-grid-column
-											resizable
-											header="Price (LTC)"
-											.renderer=${(root, column, data) => {
+								<vaadin-grid theme="compact column-borders row-stripes wrap-cell-content" id="myOrdersGrid" aria-label="My Orders" .items="${this.listedCoins.get(this.selectedCoin).myOrders}">
+									<vaadin-grid-column
+										resizable
+										header="Date"
+										.renderer=${(root, column, data) => {
+														const dateString = new Date(data.item.timestamp).toLocaleString()
+														render(html`${dateString}`, root)
+													}}
+									>
+									</vaadin-grid-column>
+									<vaadin-grid-column
+										resizable
+										header="Status"
+										.renderer=${(root, column, data) => {
+														render(html`<span id="${data.item.atAddress}"> ${data.item._tradeState} </span>`, root)
+													}}
+									>
+									</vaadin-grid-column>
+									<vaadin-grid-column
+										resizable
+										header="Price (${this.listedCoins.get(this.selectedCoin).coinCode})"
+										.renderer=${(root, column, data) => {
 												const price = this.round(parseFloat(data.item.foreignAmount) / parseFloat(data.item.qortAmount))
 												render(html`${price}`, root)
 											}}
-										>
-										</vaadin-grid-column>
-										<vaadin-grid-column resizable header="Amount (QORT)" path="qortAmount"></vaadin-grid-column>
-										<vaadin-grid-column resizable header="Total (LTC)" path="foreignAmount"></vaadin-grid-column>
-										<vaadin-grid-column
-											resizable
-											width="5rem"
-											flex-grow="0"
-											header="Action"
-											.renderer=${(root, column, data) => {
-												render(html`${this.renderCancelButton(data.item)}`, root)
-											}}
-										></vaadin-grid-column>
-									</vaadin-grid>
-								</div>
+									>
+									</vaadin-grid-column>
+									<vaadin-grid-column resizable header="Amount (QORT)" path="qortAmount"></vaadin-grid-column>
+									<vaadin-grid-column resizable header="Total (${this.listedCoins.get(this.selectedCoin).coinCode})" path="foreignAmount"></vaadin-grid-column>
+									<vaadin-grid-column
+										resizable
+										width="5rem"
+										flex-grow="0"
+										header="Action"
+										.renderer=${(root, column, data) => {
+													render(html`${this.renderCancelButton(data.item)}`, root)
+												}}
+									></vaadin-grid-column>
+								</vaadin-grid>
 							</div>
 						</div>
-						<div class="my-historic-trades">
+					</div>
+			`;
+	}
+
+	myHistoricTradesTemplate() {
+		return html`<div class="my-historic-trades">
 							<div class="box">
 								<header>MY TRADE HISTORY</header>
 								<div class="border-wrapper">
-									<vaadin-grid theme="compact column-borders row-stripes wrap-cell-content" id="myHistoricTradesGrid" aria-label="My Open Orders" .items="${this.myHistoricTrades}">
+									<vaadin-grid theme="compact column-borders row-stripes wrap-cell-content" id="myHistoricTradesGrid" aria-label="My Open Orders" .items="${this.listedCoins.get(this.selectedCoin).myHistoricTrades}">
 										<vaadin-grid-column
 											resizable
 											header="Date"
@@ -578,62 +660,90 @@ class TradePortal extends LitElement {
 										</vaadin-grid-column>
 										<vaadin-grid-column
 											resizable
-											header="Price (LTC)"
+											header="Price (${this.listedCoins.get(this.selectedCoin).coinCode})"
 											.renderer=${(root, column, data) => {
-												const price = this.round(parseFloat(data.item.foreignAmount) / parseFloat(data.item.qortAmount))
-												render(html`${price}`, root)
-											}}
+														const price = this.round(parseFloat(data.item.foreignAmount) / parseFloat(data.item.qortAmount))
+														render(html`${price}`, root)
+													}}
 										>
 										</vaadin-grid-column>
 										<vaadin-grid-column resizable header="Amount (QORT)" path="qortAmount"></vaadin-grid-column>
 										<vaadin-grid-column
 											resizable
-											header="Total (LTC)"
+											header="Total (${this.listedCoins.get(this.selectedCoin).coinCode})"
 											.renderer=${(root, column, data) => {
-												render(html`<span> ${data.item.foreignAmount} </span>`, root)
-											}}
+														render(html`<span> ${data.item.foreignAmount} </span>`, root)
+													}}
 										>
 										</vaadin-grid-column>
 									</vaadin-grid>
 								</div>
 							</div>
-						</div>
-						
-					</div>
+						</div>`;
+	}
 
+	render() {
+		return html`
+			<div id="trade-portal-page">
+				<div style="min-height:40px; display: flex; padding-bottom: 0px; margin: 2px 2px 0px 2px ;">
+					<h2 style="margin: 0; flex: 1; padding-top: .1em; display: inline;">Trade Portal - QORT/${this.listedCoins.get(this.selectedCoin).coinCode}</h2>
+				</div>
+	
+				<div id="trade-portal">
+					<div id="coinSelection">
+						<mwc-tab-bar id="coinsTabs" activeIndex="0">
+							<mwc-tab id="LiteCoinTab" label="LiteCoin" @click=${(e) => this.setForeignCoin('LITECOIN')}></mwc-tab>
+							<mwc-tab id="DodgeCoinTab" label="DogeCoin" @click=${(e) => this.setForeignCoin('DOGECOIN')}></mwc-tab>
+						</mwc-tab-bar>
+					</div>
+					<div id="first-trade-section">
+						${this.historicTradesTemplate()}
+						${this.openTradesTemplate()}
+						${this.openMarketTemplate()}
+					</div>
+					<div id="second-trade-section">
+						${this.myOpenOrdersTemplate()}
+						${this.myHistoricTradesTemplate()}
+					</div>
+	
 					<!-- <div class="full-width">
-                        THIS IS JUST A WIDE CONTAINER, MIGHT BE USED TO DISPLAY SOME INFO OR WRITE UP (-_-)
-                    </div> -->
+						THIS IS JUST A WIDE CONTAINER, MIGHT BE USED TO DISPLAY SOME INFO OR WRITE UP (-_-)
+					</div> -->
 				</div>
 			</div>
-
+	
 			<!-- Manage Stuck Orders Dialog -->
 			<mwc-dialog id="manageStuckOrdersDialog" scrimClickAction="${this.cancelStuckOfferBtnDisable ? '' : 'close'}">
 				<div style="text-align:center">
 					<h1>Stuck Offers</h1>
 					<hr />
 				</div>
-
 				<div>
-					<vaadin-grid style="width: 500px" theme="compact column-borders row-stripes wrap-cell-content" id="stuckOrdersGrid" aria-label="My Offering Orders" .items="${this.myOfferingOrders}">
+					<vaadin-grid style="width: 500px" theme="compact column-borders row-stripes wrap-cell-content" id="stuckOrdersGrid" aria-label="My Offering Orders" .items="${this.listedCoins.get(this.selectedCoin).myOfferingOrders}">
 						<vaadin-grid-column resizable header="Amount (QORT)" path="qortAmount"></vaadin-grid-column>
-						<vaadin-grid-column resizable header="Price (LTC)" path="price"></vaadin-grid-column>
-						<vaadin-grid-column resizable header="Total (LTC)" path="expectedForeignAmount"></vaadin-grid-column>
-						<vaadin-grid-column
-							resizable
-							width="5rem"
-							flex-grow="0"
-							header="Action"
+						<vaadin-grid-column resizable header="Price (${this.listedCoins.get(this.selectedCoin).coinCode})" path="price"></vaadin-grid-column>
+						<vaadin-grid-column resizable header="Total (${this.listedCoins.get(this.selectedCoin).coinCode})" path="expectedForeignAmount"></vaadin-grid-column>
+						<vaadin-grid-column resizable width="5rem" flex-grow="0" header="Action"
 							.renderer=${(root, column, data) => {
-								render(html`${this.renderCancelStuckOfferButton(data.item)}`, root)
-							}}
+										render(html`${this.renderCancelStuckOfferButton(data.item)}`, root)
+									}}
 						></vaadin-grid-column>
 					</vaadin-grid>
 				</div>
-
 				<mwc-button ?disabled="${this.cancelStuckOfferBtnDisable}" slot="secondaryAction" dialogAction="cancel" class="cancel"> Close </mwc-button>
 			</mwc-dialog>
 		`
+	}
+
+	setForeignCoin(coin) {//change the active coin
+		let _this = this
+		this.selectedCoin = coin
+		this.isLoadingHistoricTrades = true
+		this.isLoadingOpenTrades = true
+		this.createConnection()
+		this._openOrdersGrid.querySelector('#priceColumn').headerRenderer = function (root) {
+			root.innerHTML = '<vaadin-grid-sorter path="price" direction="asc">Price (' + _this.listedCoins.get(_this.selectedCoin).coinCode + ')</vaadin-grid-sorter>'
+		}
 	}
 
 	displayTabContent(tab) {
@@ -642,26 +752,38 @@ class TradePortal extends LitElement {
 		tabBuyContent.style.display = (tab === 'buy') ? 'block' : 'none'
 		tabSellContent.style.display = (tab === 'sell') ? 'block' : 'none'
 	}
+	reRenderHistoricTrades() {//will be changed by hte historic grade request updae when the rendering elements are separated
+		this.requestUpdate()
+		this.isLoadingHistoricTrades = false
+	}
+	reRenderOpenFilteredOrders() {//will be changed by hte historic grade request updae when the rendering elements are separated
+		this.requestUpdate()
+		this.isLoadingOpenTrades = false
+	}
+	reRenderMyOpenOrders() {//will be changed by hte historic grade request updae when the rendering elements are separated
+		this.requestUpdate()
+		this.isLoadingMyOpenOrders = false
+	}
 
 	firstUpdated() {
+		let _this = this
 		setTimeout(() => { // initially `display: none` would not render CSS properly
 			this.displayTabContent('buy')
 		}, 0)
 		// Check LTC Wallet Balance
-		this.updateLTCAccountBalance()
+		this.updateWalletBalance()
 		// Set Trade Panes
-		this.openOrdersGrid = this.shadowRoot.getElementById('openOrdersGrid')
-		this.openOrdersGrid.querySelector('#priceColumn').headerRenderer = function (root) {
-			root.innerHTML = '<vaadin-grid-sorter path="price" direction="asc">Price (LTC)</vaadin-grid-sorter>'
+		this._openOrdersGrid = this.shadowRoot.getElementById('openOrdersGrid')
+		this._openOrdersGrid.querySelector('#priceColumn').headerRenderer = function (root) {
+			root.innerHTML = '<vaadin-grid-sorter path="price" direction="asc">Price (' + _this.listedCoins.get(_this.selectedCoin).coinCode + ')</vaadin-grid-sorter>'
 		}
-		this.openOrdersGrid.querySelector('#qprtAmountColumn').headerRenderer = function (root) {
+		this._openOrdersGrid.querySelector('#qortAmountColumn').headerRenderer = function (root) {
 			root.innerHTML = '<vaadin-grid-sorter path="qortAmount">Amount (QORT)</vaadin-grid-sorter>'
 		}
-
-		this.myOrdersGrid = this.shadowRoot.getElementById('myOrdersGrid')
-		this.historicTradesGrid = this.shadowRoot.getElementById('historicTradesGrid')
-		this.myHistoricTradesGrid = this.shadowRoot.getElementById('myHistoricTradesGrid')
-		this.stuckOrdersGrid = this.shadowRoot.getElementById('stuckOrdersGrid')
+		this._myOrdersGrid = this.shadowRoot.getElementById('myOrdersGrid')
+		this._historicTradesGrid = this.shadowRoot.getElementById('historicTradesGrid')
+		this._myHistoricTradesGrid = this.shadowRoot.getElementById('myHistoricTradesGrid')
+		this._stuckOrdersGrid = this.shadowRoot.getElementById('stuckOrdersGrid')
 
 		// call getOpenOrdersGrid
 		this.getOpenOrdersGrid()
@@ -684,7 +806,7 @@ class TradePortal extends LitElement {
 		window.onkeyup = (e) => {
 			if (e.keyCode === 27) parentEpml.request('closeCopyTextMenu', null)
 		}
-
+		
 		let configLoaded = false
 		parentEpml.ready().then(() => {
 			// Create Trade Portal Connection
@@ -745,23 +867,23 @@ class TradePortal extends LitElement {
 		}
 
 		const addOffer = () => {
-			this.openOrders.unshift(offerItem)
+			this.listedCoins.get(this.selectedCoin).openOrders.unshift(offerItem)
 		}
 
 		const initOffer = () => {
-			this.openOrders.push(offerItem)
+			this.listedCoins.get(this.selectedCoin).openOrders.push(offerItem)
 		}
 
-		this.openOrders.length === 0 ? initOffer() : addOffer()
-		this.tradeOffersSocketCounter > 1 ? this.openOrdersGrid.clearCache() : null
+		this.listedCoins.get(this.selectedCoin).openOrders.length === 0 ? initOffer() : addOffer()
+		this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1 ? this._openOrdersGrid.clearCache() : null
 	}
 
 	processRedeemedTrade(offer) {
 		// If trade is mine, add it to my historic trades and also add it to historic trades
 		if (offer.qortalCreator === this.selectedAddress.address) {
-			// Check and Update LTC Wallet Balance
-			if (this.tradeOffersSocketCounter > 1) {
-				this.updateLTCAccountBalance()
+			// Check and Update Wallet Balance
+			if (this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1) {
+				this.updateWalletBalance()
 			}
 
 			const offerItem = {
@@ -770,12 +892,12 @@ class TradePortal extends LitElement {
 			}
 
 			// Add to my historic trades
-			this.myHistoricTradesGrid.items.unshift(offerItem)
-			this.tradeOffersSocketCounter > 1 ? this.myHistoricTradesGrid.clearCache() : null
+			this._myHistoricTradesGrid.items.unshift(offerItem)
+			this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1 ? this._myHistoricTradesGrid.clearCache() : null
 		} else if (offer.partnerQortalReceivingAddress === this.selectedAddress.address) {
-			// Check and Update LTC Wallet Balance
-			if (this.tradeOffersSocketCounter > 1) {
-				this.updateLTCAccountBalance()
+			// Check and Update Wallet Balance
+			if (this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1) {
+				this.updateWalletBalance()
 			}
 
 			const offerItem = {
@@ -784,74 +906,74 @@ class TradePortal extends LitElement {
 			}
 
 			// Add to my historic trades
-			this.myHistoricTradesGrid.items.unshift(offerItem)
-			this.tradeOffersSocketCounter > 1 ? this.myHistoricTradesGrid.clearCache() : null
+			this._myHistoricTradesGrid.items.unshift(offerItem)
+			this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1 ? this._myHistoricTradesGrid.clearCache() : null
 		}
 
 		// Add to historic trades
 		const addNewHistoricTrade = () => {
-			this.historicTradesGrid.items.unshift(offer)
-			this.historicTradesGrid.clearCache()
+			this._historicTradesGrid.items.unshift(offer)
+			this._historicTradesGrid.clearCache()
 		}
 
-		this.tradeOffersSocketCounter > 1 ? addNewHistoricTrade() : null
+		this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1 ? addNewHistoricTrade() : null
 	}
 
 	processTradingTrade(offer) {
 		// Remove from open market orders
-		if (offer.qortalCreator === this.selectedAddress.address && this.tradeOffersSocketCounter > 1) {
-			// Check and Update LTC Wallet Balance
-			this.updateLTCAccountBalance()
+		if (offer.qortalCreator === this.selectedAddress.address && this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1) {
+			// Check and Update Wallet Balance
+			this.updateWalletBalance()
 		}
 
-		this.openOrdersGrid.items.forEach((item, index) => {
+		this._openOrdersGrid.items.forEach((item, index) => {
 			if (item.qortalAtAddress === offer.qortalAtAddress) {
-				this.openOrdersGrid.items.splice(index, 1)
-				this.tradeOffersSocketCounter > 1 ? this.openOrdersGrid.clearCache() : null
+				this._openOrdersGrid.items.splice(index, 1)
+				this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1 ? this._openOrdersGrid.clearCache() : null
 			}
 		})
 
-		this.openOrders = this.openOrders.filter((order) => order.qortalAtAddress !== offer.qortalAtAddress)
+		this.listedCoins.get(this.selectedCoin).openOrders = this.listedCoins.get(this.selectedCoin).openOrders.filter((order) => order.qortalAtAddress !== offer.qortalAtAddress)
 	}
 
 	processRefundedTrade(offer) {
 		if (offer.qortalCreator === this.selectedAddress.address) {
-			// Check and Update LTC Wallet Balance
-			if (this.tradeOffersSocketCounter > 1) {
-				this.updateLTCAccountBalance()
+			// Check and Update Wallet Balance
+			if (this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1) {
+				this.updateWalletBalance()
 			}
 
 			// Add to my historic trades
-			this.myHistoricTradesGrid.items.unshift(offer)
-			this.tradeOffersSocketCounter > 1 ? this.myHistoricTradesGrid.clearCache() : null
+			this._myHistoricTradesGrid.items.unshift(offer)
+			this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1 ? this._myHistoricTradesGrid.clearCache() : null
 		}
 	}
 
 	processCancelledTrade(offer) {
 		if (offer.qortalCreator === this.selectedAddress.address) {
-			// Check and Update LTC Wallet Balance
-			if (this.tradeOffersSocketCounter > 1) {
-				this.updateLTCAccountBalance()
+			// Check and Update Wallet Balance
+			if (this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1) {
+				this.updateWalletBalance()
 			}
 
 			// Add to my historic trades
-			this.myHistoricTradesGrid.items.unshift(offer)
-			this.tradeOffersSocketCounter > 1 ? this.myHistoricTradesGrid.clearCache() : null
+			this._myHistoricTradesGrid.items.unshift(offer)
+			this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1 ? this._myHistoricTradesGrid.clearCache() : null
 		}
 
-		this.openOrdersGrid.items.forEach((item, index) => {
+		this._openOrdersGrid.items.forEach((item, index) => {
 			if (item.qortalAtAddress === offer.qortalAtAddress) {
-				this.openOrdersGrid.items.splice(index, 1)
-				this.tradeOffersSocketCounter > 1 ? this.openOrdersGrid.clearCache() : null
+				this._openOrdersGrid.items.splice(index, 1)
+				this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1 ? this._openOrdersGrid.clearCache() : null
 			}
 		})
 
-		this.openOrders = this.openOrders.filter((order) => order.qortalAtAddress !== offer.qortalAtAddress)
+		this.listedCoins.get(this.selectedCoin).openOrders = this.listedCoins.get(this.selectedCoin).openOrders.filter((order) => order.qortalAtAddress !== offer.qortalAtAddress)
 
-		this.stuckOrdersGrid.items.forEach((item, index) => {
+		this._stuckOrdersGrid.items.forEach((item, index) => {
 			if (item.qortalAtAddress === offer.qortalAtAddress) {
-				this.stuckOrdersGrid.items.splice(index, 1)
-				this.stuckOrdersGrid.clearCache()
+				this._stuckOrdersGrid.items.splice(index, 1)
+				this._stuckOrdersGrid.clearCache()
 			}
 		})
 	}
@@ -867,7 +989,7 @@ class TradePortal extends LitElement {
 		offers.forEach((offer) => {
 			if (offer.mode === 'OFFERING') {
 				this.processOfferingTrade(offer)
-				this.tradeOffersSocketCounter > 1 ? this.openOrdersGrid.clearCache() : null
+				this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter > 1 ? this._openOrdersGrid.clearCache() : null
 			} else if (offer.mode === 'REDEEMED') {
 				this.processRedeemedTrade(offer)
 			} else if (offer.mode === 'TRADING') {
@@ -1002,46 +1124,93 @@ class TradePortal extends LitElement {
 			})
 		}
 
-		switch (this._foreignBlockchain) {
+
+		/** DogecoinACCTv1 TRADEBOT STATES
+		 *  - BOB_WAITING_FOR_AT_CONFIRM
+		 *  - BOB_WAITING_FOR_MESSAGE
+		 *  - BOB_WAITING_FOR_AT_REDEEM
+		 *  - BOB_DONE
+		 *  - BOB_REFUNDED
+		 *  - ALICE_WAITING_FOR_AT_LOCK
+		 *  - ALICE_DONE
+		 *  - ALICE_REFUNDING_A
+		 *  - ALICE_REFUNDED
+		 *
+		 * @param {[{}]} states
+		 */
+		const DogecoinACCTv1 = (states) => {
+			//  Reverse the states
+			states.reverse()
+			states.forEach((state) => {
+				if (state.creatorAddress === this.selectedAddress.address) {
+					if (state.tradeState == 'BOB_WAITING_FOR_AT_CONFIRM') {
+						this.changeTradeBotState(state, 'PENDING')
+					} else if (state.tradeState == 'BOB_WAITING_FOR_MESSAGE') {
+						this.changeTradeBotState(state, 'LISTED')
+					} else if (state.tradeState == 'BOB_WAITING_FOR_AT_REDEEM') {
+						this.changeTradeBotState(state, 'TRADING')
+					} else if (state.tradeState == 'BOB_DONE') {
+						this.handleCompletedState(state)
+					} else if (state.tradeState == 'BOB_REFUNDED') {
+						this.handleCompletedState(state)
+					} else if (state.tradeState == 'ALICE_WAITING_FOR_AT_LOCK') {
+						this.changeTradeBotState(state, 'BUYING')
+					} else if (state.tradeState == 'ALICE_DONE') {
+						this.handleCompletedState(state)
+					} else if (state.tradeState == 'ALICE_REFUNDING_A') {
+						this.changeTradeBotState(state, 'REFUNDING')
+					} else if (state.tradeState == 'ALICE_REFUNDED') {
+						this.handleCompletedState(state)
+					}
+				}
+			})
+		}
+
+		switch (this.selectedCoin) {
 			case 'LITECOIN':
 				LitecoinACCTv1(tradeStates)
 				break
 			case 'BITCOIN':
 				BitcoinACCTv1(tradeStates)
 				break
+			case 'DOGECOIN':
+				DogecoinACCTv1(tradeStates)
+				break
 			default:
 				break
 		}
 
 		// Fill Historic Trades and Filter Stuck Trades
-		if (this.tradeOffersSocketCounter === 1) {
+		if (this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter === 1) {
 			setTimeout(() => this.filterStuckTrades(tradeStates), 50)
 		}
 	}
 
 	changeTradeBotState(state, tradeState) {
 		// Set Loading state
-		this.myOrdersGrid.loading = true
-
+		//this._myOrdersGrid.loading = true
+		this.isLoadingMyOpenOrders = true
 		const stateItem = {
 			...state,
 			_tradeState: tradeState,
 		}
 
-		const item = this.myOrdersGrid.querySelector(`#${state.atAddress}`)
+		const item = this._myOrdersGrid.querySelector(`#${state.atAddress}`)
 
 		const addStateItem = () => {
-			this.myOrdersGrid.loading = false
-			this.myOrdersGrid.items.unshift(stateItem)
-			this.myOrdersGrid.clearCache()
+			//this._myOrdersGrid.loading = false
+			this.reRenderMyOpenOrders()
+			this._myOrdersGrid.items.unshift(stateItem)
+			this._myOrdersGrid.clearCache()
+
 		}
 
 		const updateStateItem = () => {
-			this.myOrdersGrid.items.forEach((item, index) => {
+			this._myOrdersGrid.items.forEach((item, index) => {
 				if (item.atAddress === state.atAddress) {
-					this.myOrdersGrid.items.splice(index, 1)
-					this.myOrdersGrid.items.unshift(stateItem)
-					this.myOrdersGrid.clearCache()
+					this._myOrdersGrid.items.splice(index, 1)
+					this._myOrdersGrid.items.unshift(stateItem)
+					this._myOrdersGrid.clearCache()
 				}
 			})
 		}
@@ -1051,22 +1220,32 @@ class TradePortal extends LitElement {
 
 	// ONLY USE FOR BOB_DONE, BOB_REFUNDED, ALICE_DONE, ALICE_REFUNDED
 	handleCompletedState(state) {
-		this.myOrdersGrid.items.forEach((item, index) => {
+		this._myOrdersGrid.items.forEach((item, index) => {
 			if (item.atAddress === state.atAddress) {
-				this.myOrdersGrid.items.splice(index, 1)
-				this.myOrdersGrid.clearCache()
+				this._myOrdersGrid.items.splice(index, 1)
+				this._myOrdersGrid.clearCache()
 			}
 		})
 	}
 
 	initSocket() {
+		let _relatedCoin = "" //the coin used for active websocket
 		let presenceTxns = null
 		let offeringTrades = null
 		let filteredOffers = []
 
 		self.addEventListener('message', function (event) {
-			offeringTrades = event.data
-			handleOfferingTrades()
+			switch (event.data.type) {
+				case 'open_orders':
+					offeringTrades = event.data.content
+					handleOfferingTrades()
+					break
+				case 'set_coin':
+					_relatedCoin = event.data.content
+					break
+				default:
+					break
+			}
 		})
 
 		const lessThanThirtyMinsAgo = (timestamp) => {
@@ -1085,13 +1264,13 @@ class TradePortal extends LitElement {
 
 			const startOfferPresenceMapping = async () => {
 				await asyncForEach(presenceTxns, async (presence) => {
-					await waitFor(50)
+					await waitFor(5)
 					let offerIndex = offeringTrades.findIndex((offeringTrade) => offeringTrade.qortalCreatorTradeAddress === presence.address)
 					offerIndex !== -1 ? (offeringTrades[offerIndex].lastSeen = presence.timestamp) : null
 				})
 				filteredOffers = offeringTrades.filter((offeringTrade) => lessThanThirtyMinsAgo(offeringTrade.lastSeen))
 
-				self.postMessage({ type: 'PRESENCE', data: { offers: offeringTrades, filteredOffers: filteredOffers } })
+				self.postMessage({ type: 'PRESENCE', data: { offers: offeringTrades, filteredOffers: filteredOffers, relatedCoin: _relatedCoin } })
 				filteredOffers = []
 			}
 
@@ -1117,10 +1296,11 @@ class TradePortal extends LitElement {
 			socket.onopen = () => {
 				setTimeout(pingSocket, 50)
 				tradeOffersSocketCounter += 1
-				console.log(`[TRADE-OFFERS-SOCKET] ==>: CONNECTED`)
+				//console.log(`[TRADE-OFFERS-SOCKET] ==>: CONNECTED`)
 			}
 			// Message Event
 			socket.onmessage = (e) => {
+				e.relatedCoin = _relatedCoin//add relatedCoin to the data load
 				self.postMessage({
 					type: 'TRADE_OFFERS',
 					data: e.data,
@@ -1133,15 +1313,14 @@ class TradePortal extends LitElement {
 			// Closed Event
 			socket.onclose = () => {
 				clearTimeout(socketTimeout)
-				console.log(`[TRADE-OFFERS-SOCKET] ==>: CLOSED`)
-
+				//console.log(`[TRADE-OFFERS-SOCKET] ==>: CLOSED`)
 				// Restart Socket Connection
 				restartTradeOffersWebSocket()
 			}
 			// Error Event
 			socket.onerror = (e) => {
 				clearTimeout(socketTimeout)
-				console.log(`[TRADE-OFFERS-SOCKET] ==>: ${e.type}`)
+				//console.log(`[TRADE-OFFERS-SOCKET] ==>: ${e.type}`)
 			}
 
 			const pingSocket = () => {
@@ -1157,10 +1336,11 @@ class TradePortal extends LitElement {
 			// Open Connection
 			socket.onopen = () => {
 				setTimeout(pingSocket, 50)
-				console.log(`[TRADEBOT-SOCKET] ==>: CONNECTED`)
+				//console.log(`[TRADEBOT-SOCKET] ==>: CONNECTED`)
 			}
 			// Message Event
 			socket.onmessage = (e) => {
+				e.relatedCoin = _relatedCoin//add relatedCoin to the data load
 				self.postMessage({
 					type: 'TRADE_BOT',
 					data: e.data,
@@ -1171,15 +1351,14 @@ class TradePortal extends LitElement {
 			// Closed Event
 			socket.onclose = () => {
 				clearTimeout(socketTimeout)
-				console.log(`[TRADEBOT-SOCKET] ==>: CLOSED`)
-
+				//console.log(`[TRADEBOT-SOCKET] ==>: CLOSED`)
 				// Restart Socket Connection
 				restartTradeBotWebSocket()
 			}
 			// Error Event
 			socket.onerror = (e) => {
 				clearTimeout(socketTimeout)
-				console.log(`[TRADEBOT-SOCKET] ==>: ${e.type}`)
+				//console.log(`[TRADEBOT-SOCKET] ==>: ${e.type}`)
 			}
 
 			const pingSocket = () => {
@@ -1195,7 +1374,7 @@ class TradePortal extends LitElement {
 			// Open Connection
 			socket.onopen = () => {
 				setTimeout(pingSocket, 50)
-				console.log(`[PRESENCE-SOCKET] ==>: CONNECTED`)
+				//console.log(`[PRESENCE-SOCKET] ==>: CONNECTED`)
 			}
 			// Message Event
 			socket.onmessage = (e) => {
@@ -1206,15 +1385,14 @@ class TradePortal extends LitElement {
 			// Closed Event
 			socket.onclose = () => {
 				clearTimeout(socketTimeout)
-				console.log(`[PRESENCE-SOCKET] ==>: CLOSED`)
-
+				//console.log(`[PRESENCE-SOCKET] ==>: CLOSED`)
 				// Restart Socket Connection
 				restartPresenceWebSocket()
 			}
 			// Error Event
 			socket.onerror = (e) => {
 				clearTimeout(socketTimeout)
-				console.log(`[PRESENCE-SOCKET] ==>: ${e.type}`)
+				//console.log(`[PRESENCE-SOCKET] ==>: ${e.type}`)
 			}
 
 			const pingSocket = () => {
@@ -1254,14 +1432,28 @@ class TradePortal extends LitElement {
 		const fundingQortAmount = this.round(parseFloat(sellAmountInput) + 0.001) // Set default AT fees for processing to 0.001 QORT // TODO: remove hard-coded values
 
 		const makeRequest = async () => {
+			a
+			const _receivingAddress = null
+
+			switch (this.selectedCoin) {
+				case 'LITECOIN':
+					_receivingAddress = this.selectedAddress.ltcWallet.address
+					break
+
+				case 'DOGECOIN':
+					_receivingAddress = this.selectedAddress.dogeWallet.address
+					break
+				default:
+					break
+			}
 			const response = await parentEpml.request('tradeBotCreateRequest', {
 				creatorPublicKey: this.selectedAddress.base58PublicKey,
 				qortAmount: parseFloat(sellAmountInput),
 				fundingQortAmount: parseFloat(fundingQortAmount),
-				foreignBlockchain: 'LITECOIN', // TODO: remove hard-coded values
+				foreignBlockchain: this.selectedCoin, // TODO: remove hard-coded values
 				foreignAmount: parseFloat(sellTotalInput),
 				tradeTimeout: 60, // FIX: reduce the tradeTimeout to 1 hour (60 minutes)
-				receivingAddress: this.selectedAddress.ltcWallet.address,
+				receivingAddress: _receivingAddress,
 			})
 
 			return response
@@ -1288,7 +1480,7 @@ class TradePortal extends LitElement {
 			}
 		}
 
-		if (this.round(parseFloat(fundingQortAmount) + parseFloat(0.002)) > parseFloat(this.qortBalance)) {
+		if (this.round(parseFloat(fundingQortAmount) + parseFloat(0.002)) > parseFloat(this.listedCoins.get("QORTAL").balance)) {
 			this.isSellLoading = false
 			this.sellBtnDisable = false
 
@@ -1355,7 +1547,6 @@ class TradePortal extends LitElement {
 				creatorPublicKey: this.selectedAddress.base58PublicKey,
 				atAddress: state.atAddress,
 			})
-
 			return response
 		}
 
@@ -1390,24 +1581,39 @@ class TradePortal extends LitElement {
 				url: `/addresses/balance/${this.selectedAddress.address}`,
 			})
 			.then((res) => {
-				this.qortBalance = res
-
+				this.listedCoins.get("QORTAL").balance = res
 				this.updateAccountBalanceTimeout = setTimeout(() => this.updateAccountBalance(), 10000)
 			})
 	}
 
-	updateLTCAccountBalance() {
+	updateWalletBalance() {
+		let _url = ``
+		let _body = null
+
+		switch (this.selectedCoin) {
+			case 'LITECOIN':
+				_url = `/crosschain/ltc/walletbalance`
+				_body = window.parent.reduxStore.getState().app.selectedAddress.ltcWallet.derivedMasterPublicKey
+				break
+
+			case 'DOGECOIN':
+				_url = `/crosschain/doge/walletbalance`
+				_body = window.parent.reduxStore.getState().app.selectedAddress.dogeWallet.derivedMasterPublicKey
+				break
+			default:
+				break
+		}
 		parentEpml
 			.request('apiCall', {
-				url: `/crosschain/ltc/walletbalance`,
+				url: _url,
 				method: 'POST',
-				body: window.parent.reduxStore.getState().app.selectedAddress.ltcWallet.derivedMasterPublicKey,
+				body: _body,
 			})
 			.then((res) => {
 				if (isNaN(Number(res))) {
-					parentEpml.request('showSnackBar', 'Failed to Fetch Litecoin Balance. Try again!')
+					parentEpml.request('showSnackBar', 'Failed to Fetch Balance. Try again!')
 				} else {
-					this.ltcBalance = (Number(res) / 1e8).toFixed(8)
+					this.listedCoins.get(this.selectedCoin).balance == (Number(res) / 1e8).toFixed(8)
 				}
 			})
 	}
@@ -1667,28 +1873,35 @@ class TradePortal extends LitElement {
 	}
 
 	clearPaneCache() {
-		this.openOrdersGrid.clearCache()
-		this.myHistoricTradesGrid.clearCache()
-		this.historicTradesGrid.clearCache()
+		this._openOrdersGrid.clearCache()
+		this._myHistoricTradesGrid.clearCache()
+		this._historicTradesGrid.clearCache()
 	}
 
 	createConnection() {
+		if (workers.get(this.selectedCoin).tradesConnectedWorker !== null) {// don't create another one if we already have one
+			this.isLoadingHistoricTrades = false
+			this.isLoadingOpenTrades = false
+			return
+		}
 		const handleMessage = (message) => {
 			switch (message.type) {
 				case 'TRADE_OFFERS':
 					if (!message.isRestarted) {
-						this.tradeOffersSocketCounter = message.counter
+						this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter = message.counter
 						this.processTradeOffers(JSON.parse(message.data))
-						this.tradeOffersSocketCounter === 1 ? this.clearPaneCache() : null
-						connectedWorker.postMessage(this.openOrders)
+						this.listedCoins.get(this.selectedCoin).tradeOffersSocketCounter === 1 ? this.clearPaneCache() : null
+						workers.get(this.selectedCoin).tradesConnectedWorker.postMessage(this.listedCoins.get(this.selectedCoin).openOrders)
+						workers.get(this.selectedCoin).tradesConnectedWorker.postMessage({ type: "open_orders", content: this.listedCoins.get(this.selectedCoin).openOrders })
 					}
 					return null
 				case 'TRADE_BOT':
 					if (!message.isRestarted) this.processTradeBotStates(JSON.parse(message.data))
 					return null
 				case 'PRESENCE':
-					this.openOrders = message.data.offers
-					this.openFilteredOrders = message.data.filteredOffers
+					this.listedCoins.get(message.data.relatedCoin).openOrders = message.data.offers// using message.data.relatedCoin to update the proper data
+					this.listedCoins.get(message.data.relatedCoin).openFilteredOrders = message.data.filteredOffers// using message.data.relatedCoin to update the proper data
+					this.reRenderOpenFilteredOrders()
 					return null
 				default:
 					break
@@ -1702,18 +1915,18 @@ class TradePortal extends LitElement {
 			{ searchValue: 'NODEURL', replaceValue: nodeUrl },
 			{
 				searchValue: 'FOREIGN_BLOCKCHAIN',
-				replaceValue: this._foreignBlockchain,
+				replaceValue: this.selectedCoin,
 			},
 		]
-
-		const connectedWorker = this.inlineWorker(this.initSocket, modifiers)
-		connectedWorker.addEventListener(
+		workers.get(this.selectedCoin).tradesConnectedWorker = this.inlineWorker(this.initSocket, modifiers)
+		workers.get(this.selectedCoin).tradesConnectedWorker.addEventListener(
 			'message',
 			function (event) {
 				handleMessage(event.data)
 			},
 			{ passive: true }
 		)
+		workers.get(this.selectedCoin).tradesConnectedWorker.postMessage({ type: "set_coin", content: this.selectedCoin })
 	}
 
 	handleStuckTrades() {
@@ -1724,7 +1937,7 @@ class TradePortal extends LitElement {
 		})
 
 		const getCompletedTrades = async () => {
-			const url = `http://NODEURL/crosschain/trades?foreignBlockchain=FOREIGN_BLOCKCHAIN`
+			const url = `http://NODEURL/crosschain/trades?limit=100&foreignBlockchain=FOREIGN_BLOCKCHAIN`
 			const res = await fetch(url)
 			const historicTrades = await res.json()
 			const compareFn = (a, b) => {
@@ -1763,24 +1976,32 @@ class TradePortal extends LitElement {
 	}
 
 	filterStuckTrades(states) {
-		let isHanddleTradesDone = false
-		let isHanddleStuckOffersDone = false
+		if (workers.get(this.selectedCoin).handleStuckTradesConnectedWorker !== null) {
+			this.isLoadingOpenTrades = false
+			return
+		}
+		//show the loading on historic trades
+		this.shadowRoot.getElementById('loadingHistoricTrades').style.display = "block";
+
+		let isHandleTradesDone = false
+		let isHandleStuckOffersDone = false
 
 		const handleMessage = (message) => {
 			switch (message.type) {
 				case 'HISTORIC_TRADES':
-					this.historicTrades = message.data
-					isHanddleTradesDone = true
+					this.listedCoins.get(this.selectedCoin).historicTrades = message.data
+					this.reRenderHistoricTrades()
+					isHandleTradesDone = true
 					break
 				case 'STUCK_OFFERS':
 					doStuckOffers(message.data)
-					isHanddleStuckOffersDone = true
+					isHandleStuckOffersDone = true
 					break
 				default:
 					break
 			}
 
-			if (isHanddleTradesDone === true && isHanddleStuckOffersDone === true) return connectedWorker.terminate()
+			if (isHandleTradesDone === true && isHandleStuckOffersDone === true) return workers.get(this.selectedCoin).handleStuckTradesConnectedWorker.terminate()
 		}
 
 		const doStuckOffers = (message) => {
@@ -1794,8 +2015,8 @@ class TradePortal extends LitElement {
 
 			const addStuckOrders = (offerItem) => {
 				if (offerItem.qortalCreator === this.selectedAddress.address) {
-					this.stuckOrdersGrid.items.unshift(offerItem)
-					this.stuckOrdersGrid.clearCache()
+					this._stuckOrdersGrid.items.unshift(offerItem)
+					this._stuckOrdersGrid.clearCache()
 				}
 			}
 
@@ -1819,13 +2040,13 @@ class TradePortal extends LitElement {
 			},
 			{
 				searchValue: 'FOREIGN_BLOCKCHAIN',
-				replaceValue: this._foreignBlockchain,
+				replaceValue: this.selectedCoin,
 			},
 		]
 
-		const connectedWorker = this.inlineWorker(this.handleStuckTrades, modifiers)
-		connectedWorker.postMessage(states)
-		connectedWorker.addEventListener(
+		workers.get(this.selectedCoin).handleStuckTradesConnectedWorker = this.inlineWorker(this.handleStuckTrades, modifiers)
+		workers.get(this.selectedCoin).handleStuckTradesConnectedWorker.postMessage(states)
+		workers.get(this.selectedCoin).handleStuckTradesConnectedWorker.addEventListener(
 			'message',
 			function (event) {
 				handleMessage(event.data)
@@ -1834,5 +2055,4 @@ class TradePortal extends LitElement {
 		)
 	}
 }
-
 window.customElements.define('trade-portal', TradePortal)

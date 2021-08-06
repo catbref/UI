@@ -34,8 +34,11 @@ class WalletProfile extends connect(store)(LitElement) {
         return html`
             <style>
                 #profileInMenu {
-                    padding:12px;
-                    border-bottom: 1px solid #eee;
+                    padding: 12px;
+                    border-top: 1px solid rgb(238, 238, 238);
+                    height: 10vh;
+                    min-height:80px
+                    background: rgb(255, 255, 255);
                 }
                 #profileInMenu:hover {
                     /* cursor:pointer; */

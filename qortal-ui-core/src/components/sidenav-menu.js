@@ -18,13 +18,11 @@ class SidenavMenu extends connect(store)(LitElement) {
     return [
       css`
         .mcd-menu {
+          height: 80vh;
           list-style: none;
-          padding: 0;
-          margin: 0;
-          background: #FFF;
+          padding: 10px 0px 100px;
+          background: rgb(255, 255, 255);
           border-radius: 2px;
-          -moz-border-radius: 2px;
-          -webkit-border-radius: 2px;
           width: 100%;
           outline: none;
         }

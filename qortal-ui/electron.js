@@ -60,9 +60,8 @@ function createWindow() {
             enableRemoteModule: false,
             sandbox: true
         },
-        fullscreen: true
     })
-
+    myWindow.maximize();
     myWindow.loadURL('http://localhost:12388/app/wallet')
 
     myWindow.on('closed', function () {

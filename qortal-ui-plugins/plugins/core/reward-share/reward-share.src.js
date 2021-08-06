@@ -80,7 +80,6 @@ class RewardShare extends LitElement {
                     <vaadin-grid-column auto-width path="mintingAccount"></vaadin-grid-column>
                     <vaadin-grid-column auto-width path="sharePercent"></vaadin-grid-column>
                     <vaadin-grid-column auto-width path="recipient"></vaadin-grid-column>
-                    <vaadin-grid-column auto-width path="rewardSharePublicKey"></vaadin-grid-column>
                     <vaadin-grid-column width="12em" header="Action" .renderer=${(root, column, data) => {
                 render(html`${this.renderRemoveRewardShareButton(data.item)}`, root)
             }}></vaadin-grid-column>

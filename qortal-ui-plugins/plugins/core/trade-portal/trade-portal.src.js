@@ -341,7 +341,7 @@ class TradePortal extends LitElement {
 
 		let litecoin = {
 			name: "LITECOIN",
-			balance: "0",
+			balance: 0,
 			coinCode: "LTC",
 			openOrders: [],
 			openFilteredOrders: [],
@@ -353,8 +353,8 @@ class TradePortal extends LitElement {
 			tradeOffersSocketCounter: 1
 		}
 		let dogecoin = {
-			name: "DOGEECOIN",
-			balance: "0",
+			name: "DOGECOIN",
+			balance: 0,
 			coinCode: "DOGE",
 			openOrders: [],
 			openFilteredOrders: [],
@@ -561,7 +561,7 @@ class TradePortal extends LitElement {
 											<mwc-textfield style="width:100%;" id="sellTotalInput" required readOnly label="Total (${this.listedCoins.get(this.selectedCoin).coinCode})" placeholder="0.0000" type="text" auto-validate="false" outlined value="${this.initialAmount}"> </mwc-textfield>
 										</p>
 
-										<span class="you-have">You have: ${this.listedCoins.get("QORTAL").coinCode} QORT</span>
+										<span class="you-have">You have: ${this.listedCoins.get("QORTAL").balance} QORT</span>
 
 										<div class="buttons">
 											<div>
@@ -740,6 +740,7 @@ class TradePortal extends LitElement {
 		this.selectedCoin = coin
 		this.isLoadingHistoricTrades = true
 		this.isLoadingOpenTrades = true
+		this.updateWalletBalance()
 		this.createConnection()
 		this._openOrdersGrid.querySelector('#priceColumn').headerRenderer = function (root) {
 			root.innerHTML = '<vaadin-grid-sorter path="price" direction="asc">Price (' + _this.listedCoins.get(_this.selectedCoin).coinCode + ')</vaadin-grid-sorter>'
@@ -1613,7 +1614,7 @@ class TradePortal extends LitElement {
 				if (isNaN(Number(res))) {
 					parentEpml.request('showSnackBar', 'Failed to Fetch Balance. Try again!')
 				} else {
-					this.listedCoins.get(this.selectedCoin).balance == (Number(res) / 1e8).toFixed(8)
+					this.listedCoins.get(this.selectedCoin).balance = (Number(res) / 1e8).toFixed(8)
 				}
 			})
 	}

@@ -399,9 +399,8 @@ class LoginSection extends connect(store)(LitElement) {
                 ].includes(selectedPage)
             )
     }
-
     showPassword(selectedPage) {
-        return (
+        let willBeShown= (
             this.saveInBrowser && [
                 'unlockBackedUpSeed',
                 'seed',
@@ -414,6 +413,10 @@ class LoginSection extends connect(store)(LitElement) {
                     'unlockStored'
                 ].includes(selectedPage)
             )
+        if(willBeShown)//if the password will be displayed lt's give it focus 
+            this.shadowRoot.getElementById('password').focus()
+        
+        return willBeShown
     }
 
     get walletSources() {
@@ -438,10 +441,6 @@ class LoginSection extends connect(store)(LitElement) {
             },
             phrase: () => {
                 const seedPhrase = this.shadowRoot.querySelector('#existingSeedPhraseInput').value
-				if (seedPhrase == "") {
-					throw new Error('Please enter a seedphrase')
-					return
-				}
                 const name = this.shadowRoot.getElementById('nameInput').value
                 const password = this.shadowRoot.getElementById('password').value
                 return {

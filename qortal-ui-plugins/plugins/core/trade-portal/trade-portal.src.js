@@ -760,17 +760,17 @@ class TradePortal extends LitElement {
 		`
 	}
 	
-	setForeignCoin(coin) {//change the active coin, this function got auto called by the menu firing a change event after it loads
+
+	setForeignCoin(coin) {//change the active coin
 		let _this = this
 		this.selectedCoin = coin
+		this.updateWalletBalance()
 		this.isLoadingHistoricTrades = true
 		this.isLoadingOpenTrades = true
 		this.createConnection()
 		this._openOrdersGrid.querySelector('#priceColumn').headerRenderer = function (root) {
 			root.innerHTML = '<vaadin-grid-sorter path="price" direction="asc">Price (' + _this.listedCoins.get(_this.selectedCoin).coinCode + ')</vaadin-grid-sorter>'
 		}
-		this.updateWalletBalance()
-
 	}
 	displayTabContent(tab) {
 		const tabBuyContent = this.shadowRoot.getElementById('tab-buy-content')
@@ -779,23 +779,24 @@ class TradePortal extends LitElement {
 		tabSellContent.style.display = (tab === 'sell') ? 'block' : 'none'
 	}
 	reRenderHistoricTrades() {//will be changed by hte historic grade request updae when the rendering elements are separated
-		this.requestUpdate()
 		this.isLoadingHistoricTrades = false
+		this.requestUpdate()
 	}
 	reRenderOpenFilteredOrders() {//will be changed by hte historic grade request updae when the rendering elements are separated
-		this.requestUpdate()
 		this.isLoadingOpenTrades = false
+		this.requestUpdate()
 	}
 	reRenderMyOpenOrders() {//will be changed by hte historic grade request updae when the rendering elements are separated
-		this.requestUpdate()
 		this.isLoadingMyOpenOrders = false
+		this.requestUpdate()
 	}
-
 	firstUpdated() {
 		let _this = this
 		setTimeout(() => { // initially `display: none` would not render CSS properly
 			this.displayTabContent('buy')
 		}, 0)
+		// Check LTC Wallet Balance
+		//this.updateWalletBalance()
 		// Set Trade Panes
 		this._openOrdersGrid = this.shadowRoot.getElementById('openOrdersGrid')
 		this._openOrdersGrid.querySelector('#priceColumn').headerRenderer = function (root) {
@@ -812,6 +813,7 @@ class TradePortal extends LitElement {
 		// call getOpenOrdersGrid
 		this.getOpenOrdersGrid()
 		
+
 		window.addEventListener(
 			'contextmenu',
 			(event) => {
@@ -833,6 +835,8 @@ class TradePortal extends LitElement {
 		
 		let configLoaded = false
 		parentEpml.ready().then(() => {
+			// Create Trade Portal Connection
+			//this.createConnection()
 			parentEpml.subscribe('selected_address', async (selectedAddress) => {
 				this.selectedAddress = {}
 				selectedAddress = JSON.parse(selectedAddress)
@@ -850,7 +854,7 @@ class TradePortal extends LitElement {
 			})
 			let coinSelectionMenu=this.shadowRoot.getElementById("coinSelectionMenu")
 			coinSelectionMenu.addEventListener('change', function() {//handle the coin selection menu
-					_this.setForeignCoin(coinSelectionMenu.value)
+				_this.setForeignCoin(coinSelectionMenu.value)
 			})
 		})
 		parentEpml.imReady()

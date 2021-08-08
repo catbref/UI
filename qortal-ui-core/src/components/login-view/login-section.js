@@ -438,10 +438,10 @@ class LoginSection extends connect(store)(LitElement) {
             },
             phrase: () => {
                 const seedPhrase = this.shadowRoot.querySelector('#existingSeedPhraseInput').value
-				if (seedPhrase == "") {
-					throw new Error('Please enter a seedphrase')
-					return
-				}
+                if (seedPhrase == "") {
+                    throw new Error('Please enter a seedphrase')
+                    return
+                }
                 const name = this.shadowRoot.getElementById('nameInput').value
                 const password = this.shadowRoot.getElementById('password').value
                 return {

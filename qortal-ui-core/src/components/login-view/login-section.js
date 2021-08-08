@@ -401,19 +401,18 @@ class LoginSection extends connect(store)(LitElement) {
     }
 
     showPassword(selectedPage) {
-        return (
+        let willBeShown= (
             this.saveInBrowser && [
                 'unlockBackedUpSeed',
                 'seed',
                 'phrase'
             ].includes(selectedPage)
-        ) ||
-            (
-                [
-                    'unlockBackedUpSeed',
-                    'unlockStored'
-                ].includes(selectedPage)
-            )
+            ) || (['unlockBackedUpSeed','unlockStored'].includes(selectedPage))
+
+        if(willBeShown)//if the password will be displayed lt's give it focus 
+            this.shadowRoot.getElementById('password').focus()
+
+        return willBeShown
     }
 
     get walletSources() {

@@ -1433,8 +1433,8 @@ class TradePortal extends LitElement {
 		const fundingQortAmount = this.round(parseFloat(sellAmountInput) + 0.001) // Set default AT fees for processing to 0.001 QORT // TODO: remove hard-coded values
 
 		const makeRequest = async () => {
-			a
-			const _receivingAddress = null
+			
+			var _receivingAddress = null
 
 			switch (this.selectedCoin) {
 				case 'LITECOIN':

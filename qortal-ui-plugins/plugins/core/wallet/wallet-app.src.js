@@ -13,6 +13,7 @@ import '@vaadin/vaadin-grid/theme/material/all-imports.js'
 import '@github/time-elements'
 
 const parentEpml = new Epml({ type: 'WINDOW', source: window.parent })
+const coinsNames=['qort','btc','ltc','doge']
 
 class MultiWallet extends LitElement {
 	static get properties() {
@@ -20,11 +21,11 @@ class MultiWallet extends LitElement {
 			loading: { type: Boolean },
 			transactions: { type: Object },
 			lastBlock: { type: Object },
-			selectedWallet: { type: Object },
-			selectedLtcWallet: { type: Object },
-			balance: { type: Number },
 			selectedTransaction: { type: Object },
 			isTextMenuOpen: { type: Boolean },
+			wallets:{type : Map},
+			_selectedWallet:'qort',
+			balanceString:'Fetching balance ...'
 		}
 	}
 
@@ -468,45 +469,46 @@ class MultiWallet extends LitElement {
 
 	constructor() {
 		super()
-		this.transactions = {
-			type: 'qort',
-			transactions: [],
-		}
-		this.balance = 0.0
-		this.balanceString = '0.000 QORT'
+		
 		this.lastBlock = {
 			height: 0,
 		}
-		this.qortWallet = {}
-		this.btcWallet = {}
-		this.ltcWallet = {}
-		this.dogeWallet = {}
+		
+
 		this.selectedTransaction = {}
 		this.isTextMenuOpen = false
 		this.loading = true
 
 		this.selectWallet = this.selectWallet.bind(this)
 
-		this.qortWallet = window.parent.reduxStore.getState().app.selectedAddress
-		this.btcWallet = window.parent.reduxStore.getState().app.selectedAddress.btcWallet
-		this.ltcWallet = window.parent.reduxStore.getState().app.selectedAddress.ltcWallet
-		this.dogeWallet = window.parent.reduxStore.getState().app.selectedAddress.dogeWallet
-
-		this.selectedWallet = {
-			type: 'qort',
-			wallet: this.qortWallet,
+		this.wallets=new Map()
+		let coinProp={
+			balance:0,
+			wallet:null,
+			transactions:[],
+			fetchingWalletBalance:false,
+			fetchingWalletTransactions:false
 		}
+		coinsNames.forEach((c,i)=>{//reset fetching status, c:coin, i:index
+			this.wallets.set(c,{...coinProp})
+		},this)//thisArg=this
+
+		this.wallets.get('qort').wallet = window.parent.reduxStore.getState().app.selectedAddress
+		this.wallets.get('btc').wallet  = window.parent.reduxStore.getState().app.selectedAddress.btcWallet
+		this.wallets.get('ltc').wallet  = window.parent.reduxStore.getState().app.selectedAddress.ltcWallet
+		this.wallets.get('doge').wallet  = window.parent.reduxStore.getState().app.selectedAddress.dogeWallet
+
+		this._selectedWallet='qort'
 
 		parentEpml.ready().then(() => {
 			parentEpml.subscribe('selected_address', async (selectedAddress) => {
-				this.selectedLtcWallet = {}
 				selectedAddress = JSON.parse(selectedAddress)
 				if (!selectedAddress || Object.entries(selectedAddress).length === 0) return
-				this.qortWallet = selectedAddress
-				this.btcWallet = selectedAddress.btcWallet
-				this.ltcWallet = selectedAddress.ltcWallet
-				this.dogeWallet = selectedAddress.dogeWallet
-
+				
+				this.wallets.get('qort').wallet = selectedAddress
+				this.wallets.get('btc').wallet  = window.parent.reduxStore.getState().app.selectedAddress.btcWallet
+				this.wallets.get('ltc').wallet  = window.parent.reduxStore.getState().app.selectedAddress.ltcWallet
+				this.wallets.get('doge').wallet  = window.parent.reduxStore.getState().app.selectedAddress.dogeWallet
 				// this.updateAccountTransactions();
 			})
 
@@ -525,19 +527,19 @@ class MultiWallet extends LitElement {
 				<div class="wallet">
 					<div style="font-size: 20px; color: #777; padding: 16px; border-bottom: 1px solid #eee;">Wallets</div>
 					<div class="cards">
-						<div type="qort" class="currency-box qort active">
+						<div coin="qort" class="currency-box qort active">
 							<div class="currency-image"></div>
 							<div class="currency-text">Qort</div>
 						</div>
-						<div type="btc" class="currency-box btc">
+						<div coin="btc" class="currency-box btc">
 							<div class="currency-image"></div>
 							<div class="currency-text">Bitcoin</div>
 						</div>
-						<div type="ltc" class="currency-box ltc">
+						<div coin="ltc" class="currency-box ltc">
 							<div class="currency-image"></div>
 							<div class="currency-text">Litecoin</div>
 						</div>
-						<div type="doge" class="currency-box doge">
+						<div coin="doge" class="currency-box doge">
 							<div class="currency-image"></div>
 							<div class="currency-text">Dogecoin</div>
 						</div>
@@ -549,8 +551,8 @@ class MultiWallet extends LitElement {
 						<div class="">
 							Current Wallet
 							<br />
-							<span style="display: block; font-size: 18px; color: rgb(68, 71, 80); margin-bottom: 6px;"> ${this.selectedWallet.type === 'qort' ? this.selectedWallet.wallet.address : this.selectedWallet.wallet.address} </span>
-							<span class="total-balance"> ${this.balanceString} </span>
+							<span style="display: block; font-size: 18px; color: rgb(68, 71, 80); margin-bottom: 6px;"> ${this._selectedWallet === 'qort' ? this.wallets.get(this._selectedWallet).wallet.address : this.wallets.get(this._selectedWallet).wallet.address} </span>
+							<span class="total-balance"> ${this.balanceString}</span>
 						</div>
 					</h2>
 					<div id="transactions">
@@ -607,14 +609,14 @@ class MultiWallet extends LitElement {
 		`
 	}
 
-	async getTransactionGrid(type) {
-		this.transactionsGrid = this.shadowRoot.querySelector(`#${type}TransactionsGrid`)
-		if (type === 'qort') {
+	async getTransactionGrid(coin) {
+		this.transactionsGrid = this.shadowRoot.querySelector(`#${coin}TransactionsGrid`)
+		if (coin === 'qort') {
 			this.transactionsGrid.addEventListener(
 				'click',
 				(e) => {
 					let myItem = this.transactionsGrid.getEventContext(e).item
-					this.showTransactionDetails(myItem, this.transactions.transactions)
+					this.showTransactionDetails(myItem, this.wallets.get(this._selectedWallet).transactions)
 				},
 				{ passive: true }
 			)
@@ -625,15 +627,14 @@ class MultiWallet extends LitElement {
 	}
 
 	async renderTransactions() {
-		if (this.transactions.type === 'qort') {
-			render(this.renderQortTransactions(this.transactions.transactions, this.selectedWallet.type), this.transactionsDOM)
+		if (this._selectedWallet === 'qort') {
+			render(this.renderQortTransactions(this.wallets.get(this._selectedWallet).transactions, this._selectedWallet), this.transactionsDOM)
 		} else {
-			render(this.renderBTCLikeTransactions(this.transactions.transactions, this.selectedWallet.type), this.transactionsDOM)
+			render(this.renderBTCLikeTransactions(this.wallets.get(this._selectedWallet).transactions, this._selectedWallet), this.transactionsDOM)
 		}
 	}
 
-	renderQortTransactions(transactions, type) {
-
+	renderQortTransactions(transactions, coin) {
 		const requiredConfirmations = 3 // arbitrary value
 		// initially `currentBlockHeight` might not be set in the store
 		const currentBlockHeight = window.parent.reduxStore.getState().app.blockInfo.height
@@ -658,7 +659,7 @@ class MultiWallet extends LitElement {
 				</template>
 			</dom-module>
 			<div style="padding-left:12px;" ?hidden="${!this.isEmptyArray(transactions)}">Address has no transactions yet.</div>
-			<vaadin-grid theme="${type}" id="${type}TransactionsGrid" ?hidden="${this.isEmptyArray(this.transactions.transactions)}" page-size="20" height-by-rows>
+			<vaadin-grid theme="${coin}" id="${coin}TransactionsGrid" ?hidden="${this.isEmptyArray(this.wallets.get(this._selectedWallet).transactions)}" page-size="20" height-by-rows>
 				<vaadin-grid-column
 					auto-width
 					.renderer=${(root, column, data) => {
@@ -679,7 +680,7 @@ class MultiWallet extends LitElement {
 					resizable
 					header="Type"
 					.renderer=${(root, column, data) => {
-						render(html` ${data.item.type} ${data.item.creatorAddress === this.qortWallet.address ? html`<span class="color-out">OUT</span>` : html`<span class="color-in">IN</span>`} `, root)
+						render(html` ${data.item.type} ${data.item.creatorAddress === this.wallets.get('qort').wallet.address ? html`<span class="color-out">OUT</span>` : html`<span class="color-in">IN</span>`} `, root)
 					}}
 				>
 				</vaadin-grid-column>
@@ -702,10 +703,10 @@ class MultiWallet extends LitElement {
 		`
 	}
 
-	renderBTCLikeTransactions(transactions, type) {
+	renderBTCLikeTransactions(transactions, coin) {
 		return html`
 			<div style="padding-left:12px;" ?hidden="${!this.isEmptyArray(transactions)}">Address has no transactions yet.</div>
-			<vaadin-grid id="${type}TransactionsGrid" ?hidden="${this.isEmptyArray(this.transactions.transactions)}" page-size="20" height-by-rows>
+			<vaadin-grid id="${coin}TransactionsGrid" ?hidden="${this.isEmptyArray(this.wallets.get(this._selectedWallet).transactions)}" page-size="20" height-by-rows>
 				<vaadin-grid-column auto-width resizable header="Transaction Hash" path="txHash"></vaadin-grid-column>
 				<vaadin-grid-column
 					auto-width
@@ -740,7 +741,7 @@ class MultiWallet extends LitElement {
 		changeWallet === true ? (this.pagesControl.innerHTML = '') : null
 
 		if (!this.pages) {
-			this.pages = Array.apply(null, { length: Math.ceil(this.transactions.transactions.length / this.transactionsGrid.pageSize) }).map((item, index) => {
+			this.pages = Array.apply(null, { length: Math.ceil(this.wallets.get(this._selectedWallet).transactions.length / this.transactionsGrid.pageSize) }).map((item, index) => {
 				return index + 1
 			})
 
@@ -780,7 +781,6 @@ class MultiWallet extends LitElement {
 			} else {
 				btn.removeAttribute('selected')
 			}
-
 			if (index === 0) {
 				if (page === 1) {
 					btn.setAttribute('disabled', '')
@@ -788,7 +788,6 @@ class MultiWallet extends LitElement {
 					btn.removeAttribute('disabled')
 				}
 			}
-
 			if (index === buttons.length - 1) {
 				if (page === this.pages.length) {
 					btn.setAttribute('disabled', '')
@@ -797,10 +796,10 @@ class MultiWallet extends LitElement {
 				}
 			}
 		})
-
 		let start = (page - 1) * this.transactionsGrid.pageSize
 		let end = page * this.transactionsGrid.pageSize
-		this.transactionsGrid.items = this.transactions.transactions.slice(start, end)
+
+		this.transactionsGrid.items = this.wallets.get(this._selectedWallet).transactions.slice(start, end)
 	}
 
 	_textMenu(event) {
@@ -813,7 +812,6 @@ class MultiWallet extends LitElement {
 			}
 			return text
 		}
-
 		const checkSelectedTextAndShowMenu = () => {
 			let selectedText = getSelectedText()
 			if (selectedText && typeof selectedText === 'string') {
@@ -857,7 +855,7 @@ class MultiWallet extends LitElement {
 			currencyBox.addEventListener('click', this.selectWallet)
 		})
 
-		this.showQortWallet()
+		this.showWallet()
 
 		window.addEventListener('contextmenu', (event) => {
 			event.preventDefault()
@@ -878,7 +876,7 @@ class MultiWallet extends LitElement {
 
 	selectWallet(event) {
 		event.preventDefault()
-
+	
 		const target = event.currentTarget
 		if (target.classList.contains('active')) return
 
@@ -888,153 +886,104 @@ class MultiWallet extends LitElement {
 			}
 		})
 		target.classList.add('active')
-
-		if (target.attributes.type.value === 'qort') {
-			this.selectedWallet = {
-				type: target.attributes.type.value,
-				currencyBox: target,
-				wallet: this.qortWallet,
-			}
-			this.showQortWallet()
-		} else if (target.attributes.type.value === 'btc') {
-			this.selectedWallet = {
-				type: target.attributes.type.value,
-				currencyBox: target,
-				wallet: this.btcWallet,
-			}
-			this.showBTCLikeWallet()
-		} else if (target.attributes.type.value === 'ltc') {
-			this.selectedWallet = {
-				type: target.attributes.type.value,
-				currencyBox: target,
-				wallet: this.ltcWallet,
-			}
-			this.showBTCLikeWallet()
-		} else if (target.attributes.type.value === 'doge') {
-			this.selectedWallet = {
-				type: target.attributes.type.value,
-				currencyBox: target,
-				wallet: this.dogeWallet,
-			}
-			this.showBTCLikeWallet()
-		}
+		this._selectedWallet=target.attributes.coin.value
+		this.showWallet()
 	}
 
-	async showQortWallet() {
-		if (!window.parent.reduxStore.getState().app.blockInfo.height) {
-			// we make sure that `blockHeight` is set before rendering QORT transactions
-			await parentEpml.request('apiCall', { url: `/blocks/height`, type: 'api' })
-				.then(height => parentEpml.request('updateBlockInfo', { height }))
-		}
+async showWallet(){
+	this.transactionsDOM.hidden = true
+	this.loading = true
 
-		this.transactionsDOM.hidden = true
-		this.loading = true
-
-		this.transactions = {
-			type: 'qort',
-			transactions: [],
-		}
-
-		this.fetchQortBalance()
-		await this.fetchQortTransactions()
-
-		await this.renderTransactions()
-		await this.getTransactionGrid(this.selectedWallet.type)
+	if (this._selectedWallet=='qort') {
+			if (!window.parent.reduxStore.getState().app.blockInfo.height) {
+				// we make sure that `blockHeight` is set before rendering QORT transactions
+				await parentEpml.request('apiCall', { url: `/blocks/height`, type: 'api' })
+					.then(height => parentEpml.request('updateBlockInfo', { height }))
+			}
+	}
+	const coin=this._selectedWallet
+	await this.fetchWalletDetails(this._selectedWallet)
+	if(this._selectedWallet == coin){//if the wallet didn't switch
+			await this.renderTransactions()
+		await this.getTransactionGrid(this._selectedWallet)
 		await this.updateItemsFromPage(1, true)
 		this.loading = false
 		this.transactionsDOM.hidden = false
 	}
+}	
+	async fetchWalletDetails(coin){//this function will fetch the balance and transactions of the given wallet
+			this.balanceString="Fetching balance ..."
+			switch (coin) {
+				case 'qort':					
+					//fetching the qort balance
+						parentEpml
+							.request('apiCall', {
+								url: `/addresses/balance/${this.wallets.get('qort').wallet.address}`,
+							})
+							.then((res) => {
+								if (isNaN(Number(res))) {
+									parentEpml.request('showSnackBar', `Failed to Fetch QORT Balance. Try again!`)
+								} else {
+									if(this._selectedWallet==coin){//check if we are still fetching wallet balance ...
+										this.wallets.get(coin).balance = res
+										this.balanceString=this.wallets.get(this._selectedWallet).balance+" "+this._selectedWallet.toLocaleUpperCase()
+									}
+								}
+							})
+					//fetching the qort transactions						
+						const txsQort = await parentEpml.request('apiCall', {
+							url: `/transactions/search?address=${this.wallets.get('qort').wallet.address}&confirmationStatus=BOTH&reverse=true`,
+						})
+						if(this._selectedWallet==coin)
+							this.wallets.get(coin).transactions = txsQort
+						
+						break
+				case 'btc':
+				case 'ltc':
+				case 'doge':
+				//fetching the balance
+					const walletName = `${coin}Wallet`
+					parentEpml
+						.request('apiCall', {
+							url: `/crosschain/${coin}/walletbalance`,
+							method: 'POST',
+							body: `${window.parent.reduxStore.getState().app.selectedAddress[walletName].derivedMasterPublicKey}`,
+						})
+						.then((res) => {
+							if (isNaN(Number(res))) {
+								parentEpml.request('showSnackBar', `Failed to Fetch ${coin.toLocaleUpperCase()} Balance. Try again!`)
+							} else {
+								if(this._selectedWallet==coin){//check if we are still fetching wallet balance ...
+									this.wallets.get(this._selectedWallet).balance = (Number(res) / 1e8).toFixed(8)
+									this.balanceString=this.wallets.get(this._selectedWallet).balance+" "+this._selectedWallet.toLocaleUpperCase()
+								}
+							}
+						})
+				//fetching transactions
+					const txs = await parentEpml.request('apiCall', {
+						url: `/crosschain/${coin}/wallettransactions`,
+						method: 'POST',
+						body: `${window.parent.reduxStore.getState().app.selectedAddress[walletName].derivedMasterPublicKey}`,
+					})
+					const compareFn = (a, b) => {
+						return b.timestamp - a.timestamp
+					}
+					const sortedTransactions = txs.sort(compareFn)
 
-	async showBTCLikeWallet() {
-		this.transactionsDOM.hidden = true
-		this.loading = true
-
-		this.fetchBTCLikeBalance(this.selectedWallet.type)
-		await this.fetchBTCLikeTransactions(this.selectedWallet.type)
-
-		await this.renderTransactions()
-		await this.getTransactionGrid(this.selectedWallet.type)
-		await this.updateItemsFromPage(1, true)
-		this.loading = false
-		this.transactionsDOM.hidden = false
-	}
-
-	async fetchQortTransactions() {
-		this.transactions = {
-			type: 'qort',
-			transactions: [],
-		}
-
-		const res = await parentEpml.request('apiCall', {
-			url: `/transactions/search?address=${this.qortWallet.address}&confirmationStatus=BOTH&reverse=true`,
-		})
-
-		this.transactions.transactions = res
-	}
-
-	fetchQortBalance() {
-		this.balance = 0
-		this.balanceString = ``
-
-		parentEpml
-			.request('apiCall', {
-				url: `/addresses/balance/${this.qortWallet.address}`,
-			})
-			.then((res) => {
-				if (isNaN(Number(res))) {
-					parentEpml.request('showSnackBar', `Failed to Fetch QORT Balance. Try again!`)
-				} else {
-					this.balance = res
-					this.balanceString = `${this.balance} QORT`
-				}
-			})
-	}
-
-	async fetchBTCLikeTransactions(type) {
-		this.transactions = {
-			type,
-			transactions: [],
-		}
-
-		const walletName = `${type}Wallet`
-		const res = await parentEpml.request('apiCall', {
-			url: `/crosschain/${type}/wallettransactions`,
-			method: 'POST',
-			body: `${window.parent.reduxStore.getState().app.selectedAddress[walletName].derivedMasterPublicKey}`,
-		})
-		const compareFn = (a, b) => {
-			return b.timestamp - a.timestamp
-		}
-		const sortedTransactions = res.sort(compareFn)
-		this.transactions.transactions = sortedTransactions
-	}
-
-	fetchBTCLikeBalance(type) {
-		this.balance = 0
-		this.balanceString = ``
-
-		const walletName = `${type}Wallet`
-		parentEpml
-			.request('apiCall', {
-				url: `/crosschain/${type}/walletbalance`,
-				method: 'POST',
-				body: `${window.parent.reduxStore.getState().app.selectedAddress[walletName].derivedMasterPublicKey}`,
-			})
-			.then((res) => {
-				if (isNaN(Number(res))) {
-					parentEpml.request('showSnackBar', `Failed to Fetch ${type.toLocaleUpperCase()} Balance. Try again!`)
-				} else {
-					this.balance = (Number(res) / 1e8).toFixed(8)
-					this.balanceString = `${this.balance} ${type.toLocaleUpperCase()}`
-				}
-			})
+					if(this._selectedWallet==coin){
+						this.wallets.get(this._selectedWallet).transactions = sortedTransactions
+					}
+					break
+				default:
+					break
+			}
 	}
 
 	showTransactionDetails(myTransaction, allTransactions) {
 		allTransactions.forEach((transaction) => {
 			if (myTransaction.signature === transaction.signature) {
 				// Do something...
-				let txnFlow = myTransaction.creatorAddress === this.qortWallet.address ? 'OUT' : 'IN'
+				let txnFlow = myTransaction.creatorAddress === this.wallets.get('qort').wallet.address ? 'OUT' : 'IN'
 				this.selectedTransaction = { ...transaction, txnFlow }
 				if (this.selectedTransaction.signature.length != 0) {
 					this.shadowRoot.querySelector('#showTransactionDetailsDialog').show()
@@ -1059,18 +1008,6 @@ class MultiWallet extends LitElement {
 		num = parseFloat(num) // So that conversion to string can get rid of insignificant zeros
 		// return isNaN(num) ? 0 : (num + "").split(".")[1]
 		return num % 1 > 0 ? (num + '').split('.')[1] : '0'
-	}
-
-	sendOrRecieve(tx) {
-		return tx.sender == this.selectedLtcWallet.address
-	}
-
-	senderOrRecipient(tx) {
-		return this.sendOrRecieve(tx) ? tx.recipient : tx.sender
-	}
-
-	txColor(tx) {
-		return this.sendOrRecieve(tx) ? 'red' : 'green'
 	}
 
 	subtract(num1, num2) {

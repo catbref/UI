@@ -50,11 +50,11 @@ class AppView extends connect(store)(LitElement) {
             #sideBar {
                 height: 100vh;
                 display: flex;
-                flex: 1 1;
                 flex-direction: column;
             }
             .sideBarMenu{
-                overflow-y:scroll;
+                overflow-y: auto;
+                flex: 1 1;
             }
             #sideBar::-webkit-scrollbar {
                 width: 7px;
@@ -82,8 +82,8 @@ class AppView extends connect(store)(LitElement) {
             <app-drawer swipe-open slot="drawer" id="appdrawer">
                 <app-header-layout>
                     <div id="sideBar">
+                        <wallet-profile></wallet-profile>
                         <div class="sideBarMenu">
-                            <wallet-profile></wallet-profile>
                             <sidenav-menu></sidenav-menu>
                         </div>
                         <app-info></app-info>

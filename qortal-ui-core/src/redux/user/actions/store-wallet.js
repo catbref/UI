@@ -1,3 +1,4 @@
+
 import { STORE_WALLET, UPDATE_STORED_WALLET_NAME } from '../user-action-types.js'
 
 export const doStoreWallet = (wallet, password, name, statusUpdateFn = () => { }) => {

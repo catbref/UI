@@ -1,5 +1,5 @@
 import { loadStateFromLocalStorage } from '../../localStorageHelpers'
-import { STORE_WALLET, CLAIM_AIRDROP, UPDATE_ACCOUNT_INFO, LOAD_NOTIFICATION_CONFIG, SET_QCHAT_NOTIFICATION_CONFIG } from './user-action-types.js'
+import { STORE_WALLET, REMOVE_WALLET, CLAIM_AIRDROP, UPDATE_ACCOUNT_INFO, LOAD_NOTIFICATION_CONFIG, SET_QCHAT_NOTIFICATION_CONFIG } from './user-action-types.js'
 
 const DEFAULT_INITIAL_STATE = {
     storedWallets: {},
@@ -23,6 +23,12 @@ export default (state = loadStateFromLocalStorage('user') || DEFAULT_INITIAL_STA
                     ...(state.storedWallets || {}),
                     [action.payload.address0]: action.payload
                 }
+            }
+        case REMOVE_WALLET:
+            delete state.storedWallets[action.payload.address]
+            return {
+                ...state,
+                storedWallets:state.storedWallets
             }
         case CLAIM_AIRDROP:
             return {

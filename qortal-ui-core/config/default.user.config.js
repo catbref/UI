@@ -43,6 +43,7 @@ const user = {
 			port: 62391,
 			enableManagement: false,
 		},
+		
 	],
 	nodeSettings: {
 		pingInterval: 10 * 1000, // (10 secs)

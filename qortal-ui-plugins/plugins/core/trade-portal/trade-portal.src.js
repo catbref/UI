@@ -769,8 +769,9 @@ class TradePortal extends LitElement {
 		this._openOrdersGrid.querySelector('#priceColumn').headerRenderer = function (root) {
 			root.innerHTML = '<vaadin-grid-sorter path="price" direction="asc">Price (' + _this.listedCoins.get(_this.selectedCoin).coinCode + ')</vaadin-grid-sorter>'
 		}
+		this.clearSellForm()
+		this.clearBuyForm()
 		this.updateWalletBalance()
-
 	}
 	displayTabContent(tab) {
 		const tabBuyContent = this.shadowRoot.getElementById('tab-buy-content')

@@ -1,5 +1,5 @@
 
-import { STORE_WALLET, UPDATE_STORED_WALLET_NAME } from '../user-action-types.js'
+import { STORE_WALLET, REMOVE_WALLET, UPDATE_STORED_WALLET_NAME } from '../user-action-types.js'
 
 export const doStoreWallet = (wallet, password, name, statusUpdateFn = () => { }) => {
     return (dispatch, getState) => {
@@ -21,6 +21,21 @@ const storeWallet = payload => {
     }
 }
 
+
+export const doRemoveWallet = (address) => {
+    return (dispatch, getState) => {
+        return dispatch(removeWallet({
+            address
+        }))
+    }
+}
+
+const removeWallet = payload => {
+    return {
+        type: REMOVE_WALLET,
+        payload
+    }
+}
 export const doUpdateStoredWalletName = (address, name) => {
     return (dispatch, getState) => {
         return updateStoredWalletName({

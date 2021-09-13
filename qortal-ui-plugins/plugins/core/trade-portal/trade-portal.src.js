@@ -502,6 +502,14 @@ class TradePortal extends LitElement {
 			}}
 									>
 									</vaadin-grid-column>
+									<vaadin-grid-column
+											resizable
+											header="Seller"
+											.renderer=${(root, column, data) => {
+												render(html`<span> ${data.item.qortalCreator} </span>`, root)
+											}}
+										>
+										</vaadin-grid-column>
 								</vaadin-grid>
 							</div>
 						</div>
@@ -644,6 +652,14 @@ class TradePortal extends LitElement {
 											}}
 									>
 									</vaadin-grid-column>
+									<vaadin-grid-column
+											resizable
+											header="Seller"
+											.renderer=${(root, column, data) => {
+												render(html`<span> ${data.item.qortalCreator} </span>`, root)
+											}}
+										>
+										</vaadin-grid-column>
 									<vaadin-grid-column resizable header="Amount (QORT)" path="qortAmount"></vaadin-grid-column>
 									<vaadin-grid-column resizable header="Total (${this.listedCoins.get(this.selectedCoin).coinCode})" path="foreignAmount"></vaadin-grid-column>
 									<vaadin-grid-column

@@ -732,7 +732,7 @@ class TradePortal extends LitElement {
 			<div id="trade-portal-page">
 				<div style="min-height:40px; display: flex; padding-bottom: 0px; margin: 2px 2px 0px 2px ;">
 					<h2 style="margin: 0 0 15px 0;line-height: 50px; display: inline;">Trade Portal - QORT/ </h2>
-					<mwc-select outlined id="coinSelectionMenu" @change=${(e) => this.setForeignCoin('LITECOIN')} label="Select your coin">
+					<mwc-select outlined id="coinSelectionMenu" label="Select your coin">
 						<mwc-list-item value="LITECOIN" selected></span> <span class="coinName ltc">LTC</span></mwc-list-item>
 						<mwc-list-item value="DOGECOIN"> <span class="coinName doge">DOGE</span></mwc-list-item>
 					</mwc-select>
@@ -869,6 +869,8 @@ class TradePortal extends LitElement {
 			coinSelectionMenu.addEventListener('change', function() {//handle the coin selection menu
 					_this.setForeignCoin(coinSelectionMenu.value)
 			})
+			_this.setForeignCoin('LITECOIN')//set default coin
+
 		})
 		parentEpml.imReady()
 

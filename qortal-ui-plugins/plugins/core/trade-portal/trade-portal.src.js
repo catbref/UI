@@ -1521,11 +1521,22 @@ class TradePortal extends LitElement {
 		this.buyBtnDisable = true
 
 		const qortalAtAddress = this.shadowRoot.getElementById('qortalAtAddress').value
+		let _foreignKey =""
+		switch (this.selectedCoin) {
+			case 'LITECOIN':
+				_foreignKey= this.selectedAddress.ltcWallet.derivedMasterPrivateKey
+				break
 
+			case 'DOGECOIN':
+				_foreignKey= this.selectedAddress.dogeWallet.derivedMasterPrivateKey
+				break
+			default:
+				break
+		}
 		const makeRequest = async () => {
 			const response = await parentEpml.request('tradeBotRespondRequest', {
 				atAddress: qortalAtAddress,
-				foreignKey: this.selectedAddress.ltcWallet.derivedMasterPrivateKey,
+				foreignKey: _foreignKey,
 				receivingAddress: this.selectedAddress.address,
 			})
 

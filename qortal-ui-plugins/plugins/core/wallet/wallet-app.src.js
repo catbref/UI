@@ -2,6 +2,8 @@ import { LitElement, html, css } from 'lit-element'
 import { render } from 'lit-html'
 import { Epml } from '../../../epml.js'
 
+import '../components/ButtonIconCopy'
+
 import '@material/mwc-icon'
 import '@material/mwc-button'
 import '@material/mwc-dialog'
@@ -217,12 +219,7 @@ class MultiWallet extends LitElement {
 					height: 100vh;
 					border-top-left-radius: inherit;
 					border-bottom-left-radius: inherit;
-    			border-right: 1px solid #eee;
-				}
-
-				.wallet-header {
-					margin: 0 50px;
-					display: flex;
+    				border-right: 1px solid #eee;
 				}
 
 				.transactions-wrapper {
@@ -231,11 +228,23 @@ class MultiWallet extends LitElement {
 					height: 100%;
 				}
 
-				.total-balance {
+				.wallet-header {
+					margin: 0 20px;
+				}
+
+				.wallet-address {
+					display: flex;
+					align-items: center;
+					font-size: 18px; 
+					color: var(--mdc-theme-primary, #444750); 
+					margin: 4px 0 20px;
+				}
+
+				.wallet-balance {
 					display: inline-block;
 					font-weight: 600;
 					font-size: 32px;
-					color: #444750;
+					color: var(--mdc-theme-primary, #444750); 
 				}
 
 				#transactions {
@@ -446,7 +455,7 @@ class MultiWallet extends LitElement {
 					.currency-box:last-of-type {
 						margin-bottom: 0;
 					}
-					.total-balance {
+					.wallet-balance {
 						font-size: 22px;
 					}
 				}
@@ -548,12 +557,20 @@ class MultiWallet extends LitElement {
 
 				<div class="transactions-wrapper">
 					<h2 class="wallet-header">
-						<div class="">
-							Current Wallet
-							<br />
-							<span style="display: block; font-size: 18px; color: rgb(68, 71, 80); margin-bottom: 6px;"> ${this._selectedWallet === 'qort' ? this.wallets.get(this._selectedWallet).wallet.address : this.wallets.get(this._selectedWallet).wallet.address} </span>
-							<span class="total-balance"> ${this.balanceString}</span>
+						Current Wallet
+						<div class="wallet-address">
+							<span>${this.getSelectedWalletAddress()}</span>
+							<button-icon-copy 
+								title="Copy wallet address to clipboard" 
+								textToCopy=${this.getSelectedWalletAddress()}
+								buttonSize="28px"
+								iconSize="16px"
+								color="#707584"
+								offsetLeft="4px"
+							>
+							</button-icon-copy> 
 						</div>
+						<span class="wallet-balance">${this.balanceString}</span>
 					</h2>
 					<div id="transactions">
 						${this.loading ? html`<paper-spinner-lite style="display: block; margin: 0 auto;" active></paper-spinner-lite>` : ''}
@@ -608,6 +625,13 @@ class MultiWallet extends LitElement {
 			</div>
 		`
 	}
+
+	getSelectedWalletAddress() {
+		return this._selectedWallet === 'qort'
+			? this.wallets.get(this._selectedWallet).wallet.address
+			: this.wallets.get(this._selectedWallet).wallet.address
+	}
+		
 
 	async getTransactionGrid(coin) {
 		this.transactionsGrid = this.shadowRoot.querySelector(`#${coin}TransactionsGrid`)

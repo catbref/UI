@@ -53,9 +53,9 @@ class ButtonIconCopy extends LitElement {
     async saveToClipboard(text) {
         try {
             await navigator.clipboard.writeText(text)
-            parentEpml.request('showSnackBar', 'Address copied to clipboard');
+            parentEpml.request('showSnackBar', 'Address copied to clipboard')
         } catch (err) {
-            parentEpml.request('showSnackBar', 'Unable to copy address');
+            parentEpml.request('showSnackBar', 'Unable to copy address')
             console.error('Unable to copy address', err)
         }
     }

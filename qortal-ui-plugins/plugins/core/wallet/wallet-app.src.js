@@ -561,7 +561,9 @@ class MultiWallet extends LitElement {
 						<div class="wallet-address">
 							<span>${this.getSelectedWalletAddress()}</span>
 							<button-icon-copy 
-								title="Copy wallet address to clipboard" 
+								title="Copy wallet address to clipboard"
+								onSuccessMessage="Address copied to clipboard"
+								onErrorMessage="Unable to copy address"
 								textToCopy=${this.getSelectedWalletAddress()}
 								buttonSize="28px"
 								iconSize="16px"

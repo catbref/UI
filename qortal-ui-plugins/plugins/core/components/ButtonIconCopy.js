@@ -10,6 +10,8 @@ class ButtonIconCopy extends LitElement {
         return {
             textToCopy: { type: String },
             title: { type: String },
+            onSuccessMessage: { type: String },
+            onErrorMessage: { type: String },
             buttonSize: { type: String },
             iconSize: { type: String },
             color: { type: String },
@@ -22,6 +24,8 @@ class ButtonIconCopy extends LitElement {
         super()
         this.textToCopy = ''
         this.title = 'Copy to clipboard'
+        this.onSuccessMessage = 'Copied to clipboard'
+        this.onErrorMessage = 'Unable to copy'
         this.buttonSize = '48px'
         this.iconSize = '24px'
         this.color = 'inherit'
@@ -53,10 +57,10 @@ class ButtonIconCopy extends LitElement {
     async saveToClipboard(text) {
         try {
             await navigator.clipboard.writeText(text)
-            parentEpml.request('showSnackBar', 'Address copied to clipboard')
+            parentEpml.request('showSnackBar', this.onSuccessMessage)
         } catch (err) {
-            parentEpml.request('showSnackBar', 'Unable to copy address')
-            console.error('Unable to copy address', err)
+            parentEpml.request('showSnackBar', this.onErrorMessage)
+            console.error('Copy to clipboard error:', err)
         }
     }
 }

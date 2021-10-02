@@ -111,9 +111,13 @@ const elementComponents = {
                         file: 'components/settings-view/security-view.js',
                         className: 'SecurityView'
                     },
-                    'notifications-view': {
+                    'notification-view': {
                         file: 'components/settings-view/notifications-view.js',
                         className: 'NotificationsView'
+                    },
+                    'chat-view': {
+                        file: 'components/settings-view/chat-view.js',
+                        className: 'ChatView'
                     }
                 }
             }

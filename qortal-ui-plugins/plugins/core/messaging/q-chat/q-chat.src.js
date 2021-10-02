@@ -262,7 +262,6 @@ class Chat extends LitElement {
         this.config = {
             user: {
                 node: {
-
                 }
             }
         }
@@ -457,7 +456,6 @@ class Chat extends LitElement {
 
             }
         }
-
         let configLoaded = false
         parentEpml.ready().then(() => {
             parentEpml.subscribe('selected_address', async selectedAddress => {
@@ -493,6 +491,13 @@ class Chat extends LitElement {
         })
 
         parentEpml.imReady()
+
+        document.addEventListener('remove_recent_muted_blocked', (e) => {
+            this.shadowRoot.querySelector('chat-page').shadowRoot.querySelector('chat-scroller').shadowRoot.getElementById('viewElement').querySelectorAll('.usermessage_'+e.detail.addr).forEach((um)=>{//let's remove te muted user message
+                console.log(um)
+                um.remove()
+            })
+        })
     }
 
     _sendMessage() {
@@ -528,7 +533,6 @@ class Chat extends LitElement {
                 type: 'api',
                 url: `/names/${receiverName}`
             })
-
             if (myNameRes.error === 401) {
                 myRes = false
             } else {
@@ -579,7 +583,7 @@ class Chat extends LitElement {
         };
 
         const sendMessageRequest = async (isEncrypted, _publicKey) => {
-
+            console.log(this.selectedAddress)
             let chatResponse = await parentEpml.request('chat', {
                 type: 18,
                 nonce: this.selectedAddress.nonce,

@@ -1,5 +1,5 @@
 import { loadStateFromLocalStorage } from '../../localStorageHelpers'
-import { STORE_WALLET, REMOVE_WALLET, CLAIM_AIRDROP, UPDATE_ACCOUNT_INFO, LOAD_NOTIFICATION_CONFIG, SET_QCHAT_NOTIFICATION_CONFIG } from './user-action-types.js'
+import { STORE_WALLET, REMOVE_WALLET, CLAIM_AIRDROP, UPDATE_ACCOUNT_INFO, LOAD_NOTIFICATION_CONFIG, SET_QCHAT_NOTIFICATION_CONFIG, STORE_MUTED_USERS, STORE_BLOCKED_USERS } from './user-action-types.js'
 
 const DEFAULT_INITIAL_STATE = {
     storedWallets: {},
@@ -11,7 +11,9 @@ const DEFAULT_INITIAL_STATE = {
         q_chat: {},
         block: {}
     },
-    loaded: false
+    loaded: false,
+    mutedUsers:{},
+    blockedUsers:{}
 }
 
 export default (state = loadStateFromLocalStorage('user') || DEFAULT_INITIAL_STATE, action) => {
@@ -58,6 +60,23 @@ export default (state = loadStateFromLocalStorage('user') || DEFAULT_INITIAL_STA
                     q_chat: action.payload
                 }
             }
+        case STORE_MUTED_USERS:
+            console.log(action.payload)
+            return  {
+                ...state,
+                mutedUsers: {
+                    ...(state.mutedUsers || {}),
+                    [action.payload.myAddress]: action.payload.users
+                }
+            }
+        case STORE_BLOCKED_USERS:
+                return  {
+                    ...state,
+                    blockedUsers: {
+                        ...(state.blockedUsers || {}),
+                        [action.payload.myAddress]: action.payload.users
+                    }
+                }
         default:
             return state
     }

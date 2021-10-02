@@ -301,7 +301,6 @@ class ChatWelcomePage extends LitElement {
         };
 
         const sendMessageRequest = async (isEncrypted, _publicKey) => {
-
             let chatResponse = await parentEpml.request('chat', {
                 type: 18,
                 nonce: this.selectedAddress.nonce,
@@ -386,6 +385,12 @@ class ChatWelcomePage extends LitElement {
             })
         })
 
+        parentEpml.subscribe('selected_address', async selectedAddress => {//fix the center new private message btn, not sending messages
+            this.selectedAddress = {}
+            selectedAddress = JSON.parse(selectedAddress)
+            if (!selectedAddress || Object.entries(selectedAddress).length === 0) return
+            this.selectedAddress = selectedAddress
+        })
 
         parentEpml.imReady()
     }

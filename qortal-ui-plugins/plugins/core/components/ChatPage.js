@@ -6,11 +6,18 @@ import { inputKeyCodes } from '../../utils/keyCodes.js';
 
 import './ChatScroller.js'
 import './TimeAgo.js'
-
+import {MuteBlock} from './MuteBlockUser.js'
+import  './MuteBlockTag.js'
 import { EmojiPicker } from 'emoji-picker-js';
 import '@polymer/paper-spinner/paper-spinner-lite.js'
+import '@material/mwc-icon-button'
 
 const parentEpml = new Epml({ type: 'WINDOW', source: window.parent })
+//Check if the current user is connected over localhost to a node, and is node management enabled
+const selectedNode=window.parent.reduxStore.getState().app.nodeConfig.knownNodes[window.parent.reduxStore.getState().app.nodeConfig.node]
+const isMyNode = (selectedNode.domain=="127.0.0.1" || selectedNode.domain=="localhost") && selectedNode.enableManagement
+
+let mb = new MuteBlock()
 
 class ChatPage extends LitElement {
     static get properties() {
@@ -32,7 +39,9 @@ class ChatPage extends LitElement {
             isUserDown: { type: Boolean },
             isPasteMenuOpen: { type: Boolean },
             showNewMesssageBar: { attribute: false },
-            hideNewMesssageBar: { attribute: false }
+            hideNewMesssageBar: { attribute: false },
+            blockedSenders: {type:Array},
+            mutedUsers:{type:Array}
         }
     }
 
@@ -57,6 +66,7 @@ class ChatPage extends LitElement {
             margin-bottom: 8px;
             border: 1px solid rgba(0, 0, 0, 0.3);
             border-radius: 10px;
+            background:#fff;
         }
         .chat-text-area .typing-area textarea {
             display: none;
@@ -80,6 +90,29 @@ class ChatPage extends LitElement {
             cursor: pointer;
             max-height: 40px;
         }
+        .blink{
+            animation: blink 1.5s linear infinite;
+        }
+        .loadingMessages{
+            line-height: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.3em;
+        }
+        .muteBtn{
+            height:20px;
+            line-height:20px;
+            background:red;
+            color:white;
+        }
+        @keyframes blink{
+            0%{opacity: 0;}
+            20%{opacity: .2;}
+            40%{opacity: .4;}
+            60%{opacity: .6;}
+            80%{opacity: .8;}
+            100%{opacity: 1;}
+        }
         `
     }
 
@@ -94,7 +127,6 @@ class ChatPage extends LitElement {
         //     // }
         // });
     }
-
     constructor() {
         super()
         this.getOldMessage = this.getOldMessage.bind(this)
@@ -119,10 +151,9 @@ class ChatPage extends LitElement {
     }
 
     render() {
-
         // TODO: Build a nice preloader for loading messages...
         return html`
-            ${this.isLoadingMessages ? html`<h1>Loading Messages...</h1>` : this.renderChatScroller(this._initialMessages)}
+            ${this.isLoadingMessages ? html`<h1 class="loadingMessages blink">Loading Messages...</h1>` : this.renderChatScroller(this._initialMessages)}
 
             <div class="chat-text-area">
                 <div class="typing-area">
@@ -143,7 +174,8 @@ class ChatPage extends LitElement {
     }
 
     getOldMessage(scrollElement) {
-
+        console.log("____ getOldMessage")
+        console.log(this._messages)
         if (this._messages.length <= 15 && this._messages.length >= 1) { // 15 is the default number of messages...
 
             let __msg = [...this._messages]
@@ -154,17 +186,14 @@ class ChatPage extends LitElement {
 
             return { oldMessages: this._messages.splice(this._messages.length - 15), scrollElement: scrollElement }
         } else {
-
             return false
         }
     }
-
     processMessages(messages, isInitial) {
+        messages=mb.filterBlockedUsers(messages)
 
         if (isInitial) {
-
             this.messages = messages.map((eachMessage) => {
-
                 if (eachMessage.isText === true) {
                     this.messageSignature = eachMessage.signature
                     let _eachMessage = this.decodeMessage(eachMessage)
@@ -175,7 +204,6 @@ class ChatPage extends LitElement {
             this._messages = [...this.messages]
 
             const adjustMessages = () => {
-
                 let __msg = [...this._messages]
                 this._messages = []
                 this._initialMessages = __msg
@@ -204,12 +232,8 @@ class ChatPage extends LitElement {
                     return _eachMessage
                 }
             })
-
             this.newMessages = this.newMessages.concat(_newMessages)
-
         }
-
-
     }
 
     /**
@@ -219,15 +243,19 @@ class ChatPage extends LitElement {
     * @property sender and other info..
     */
     chatMessageTemplate(messageObj) {
+        console.log("chatMessageTemplate 2")//called on senders/receivers ui on new message
 
+        let isMyMessage = messageObj.sender === this.selectedAddress.address
+        let displayedName = messageObj.senderName ? messageObj.senderName : messageObj.sender
         return `
-            <li class="clearfix">
-                <div class="message-data ${messageObj.sender === this.selectedAddress.address ? "align-right" : ""}">
-                    <span class="message-data-name">${messageObj.senderName ? messageObj.senderName : messageObj.sender}</span>
+            <div class="clearfix">
+                <div class="message-data ${isMyMessage ? "align-right" : ""}">
+                    <span class="message-data-name">${displayedName}</span>
                     <span class="message-data-time"><message-time timestamp=${messageObj.timestamp}></message-time></span>
+                    <mute-block hidemute="${isMyMessage}" hideblock="${(isMyMessage || !isMyNode)}" myaddress="${this.selectedAddress.address}" concernedaddress="${messageObj.sender}" concernedname="${displayedName}"></mute-block>    
                 </div>
-                <div class="message ${messageObj.sender === this.selectedAddress.address ? "my-message float-right" : "other-message"}">${this.emojiPicker.parse(escape(messageObj.decodedMessage))}</div>
-            </li>
+                <div class="message ${isMyMessage ? "my-message float-right" : "other-message"}">${this.emojiPicker.parse(escape(messageObj.decodedMessage))}</div>
+            </div>
         `
     }
 
@@ -240,7 +268,6 @@ class ChatPage extends LitElement {
         li.id = newMessage.signature;
 
         if (newMessage.sender === this.selectedAddress.address) {
-
             viewElement.insertBefore(li, downObserver);
             viewElement.scrollTop = viewElement.scrollHeight;
         } else if (this.isUserDown) {
@@ -305,10 +332,8 @@ class ChatPage extends LitElement {
             let directSocketLink
 
             if (window.parent.location.protocol === "https:") {
-
                 directSocketLink = `wss://${nodeUrl}/websockets/chat/messages?involving=${window.parent.reduxStore.getState().app.selectedAddress.address}&involving=${cid}`;
             } else {
-
                 // Fallback to http
                 directSocketLink = `ws://${nodeUrl}/websockets/chat/messages?involving=${window.parent.reduxStore.getState().app.selectedAddress.address}&involving=${cid}`;
             }
@@ -317,20 +342,16 @@ class ChatPage extends LitElement {
 
             // Open Connection
             directSocket.onopen = () => {
-
                 setTimeout(pingDirectSocket, 50)
             }
 
             // Message Event
             directSocket.onmessage = (e) => {
-
                 if (initial === 0) {
-
                     this.isLoadingMessages = true
                     this.processMessages(JSON.parse(e.data), true)
                     initial = initial + 1
                 } else {
-
                     this.processMessages(JSON.parse(e.data), false)
                 }
             }
@@ -351,7 +372,6 @@ class ChatPage extends LitElement {
 
                 directSocketTimeout = setTimeout(pingDirectSocket, 295000)
             }
-
         };
 
         const initGroup = (gId) => {
@@ -367,11 +387,9 @@ class ChatPage extends LitElement {
             let groupSocketLink
 
             if (window.parent.location.protocol === "https:") {
-
                 groupSocketLink = `wss://${nodeUrl}/websockets/chat/messages?txGroupId=${groupId}`;
             } else {
-
-                // Fallback to http
+                // Fallback to unencryoted websocket
                 groupSocketLink = `ws://${nodeUrl}/websockets/chat/messages?txGroupId=${groupId}`;
             }
 
@@ -379,20 +397,16 @@ class ChatPage extends LitElement {
 
             // Open Connection
             groupSocket.onopen = () => {
-
                 setTimeout(pingGroupSocket, 50)
             }
 
             // Message Event
             groupSocket.onmessage = (e) => {
-
                 if (initial === 0) {
-
                     this.isLoadingMessages = true
                     this.processMessages(JSON.parse(e.data), true)
                     initial = initial + 1
                 } else {
-
                     this.processMessages(JSON.parse(e.data), false)
                 }
             }
@@ -671,6 +685,8 @@ class ChatPage extends LitElement {
                     this.isPasteMenuOpen = false
                 }
             })
+
+           
         })
 
         parentEpml.imReady();

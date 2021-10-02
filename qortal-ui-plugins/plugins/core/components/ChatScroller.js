@@ -1,5 +1,12 @@
 import { LitElement, html, css } from 'lit-element'
 
+import { escape } from 'html-escaper';
+
+//Check if the current user is connected over localhost to a node, and is node management enabled
+const selectedNode=window.parent.reduxStore.getState().app.nodeConfig.knownNodes[window.parent.reduxStore.getState().app.nodeConfig.node]
+const isMyNode = (selectedNode.domain=="127.0.0.1" || selectedNode.domain=="localhost") && selectedNode.enableManagement
+
+
 class ChatScroller extends LitElement {
     static get properties() {
         return {
@@ -157,32 +164,45 @@ class ChatScroller extends LitElement {
                 </ul>
         `
     }
-
+    mute(){
+        console.log("mute func called")
+    }
     chatMessageTemplate(messageObj) {
-
+        console.log("chatMessageTemplate func ")//called for the first messages recovered
+        let isMyMessage = messageObj.sender === this.myAddress
+        let displayedName = messageObj.senderName ? messageObj.senderName : messageObj.sender
         return `
-            <li class="clearfix">
+            <div class="clearfix">
+                <div class="message-data ${isMyMessage ? "align-right" : ""}">
+                    <span class="message-data-name">${displayedName}</span>
+                    <span class="message-data-time"><message-time timestamp=${messageObj.timestamp}></message-time></span>
+                    <mute-block hidemute="${isMyMessage}" hideblock="${(isMyMessage || !isMyNode)}" concernedaddress="${messageObj.sender}" concernedname="${displayedName}"></mute-block>    
+    
+                </div>
+                <div class="message ${isMyMessage ? "my-message float-right" : "other-message"}">${this.emojiPicker.parse(escape(messageObj.decodedMessage))}</div>
+            </div>
+        `
+        return `
                 <div class="message-data ${messageObj.sender === this.myAddress ? "align-right" : ""}">
                     <span class="message-data-name">${messageObj.senderName ? messageObj.senderName : messageObj.sender}</span>
                     <span class="message-data-time"><message-time timestamp=${messageObj.timestamp}></message-time></span>
                 </div>
-                <div id="messageContent" class="message ${messageObj.sender === this.myAddress ? "my-message float-right" : "other-message"}">${this.emojiPicker.parse(this.escapeHTML(messageObj.decodedMessage))}</div>
-            </li>
+                <div id="messageContent" class="message ${messageObj.sender === this.myAddress ? "my-message float-right" : "other-message"}">${this.emojiPicker.parse(this.escape(messageObj.decodedMessage))}</div>
         `
     }
 
     renderChatMessages(messages) {
-
         messages.forEach(message => {
             const li = document.createElement('li');
             li.innerHTML = this.chatMessageTemplate(message);
+            li.classList.add("usermessage_"+message.sender)//add the senders' address as a class to the li element 
             li.id = message.signature;
             this.downObserverElement.before(li);
         });
     }
 
     renderOldMessages(listOfOldMessages) {
-
+        
         let { oldMessages, scrollElement } = listOfOldMessages;
 
         let _oldMessages = oldMessages.reverse();
@@ -193,6 +213,7 @@ class ChatScroller extends LitElement {
             this.upObserverElement.after(li);
             scrollElement.scrollIntoView({ behavior: 'auto', block: 'center' });
         });
+
     }
 
     _getOldMessage(_scrollElement) {
@@ -241,3 +262,4 @@ class ChatScroller extends LitElement {
 }
 
 window.customElements.define('chat-scroller', ChatScroller)
+

@@ -259,7 +259,7 @@ class NodeManagement extends LitElement {
                 <vaadin-grid-column path="version" header="Build Version"></vaadin-grid-column>
                 <vaadin-grid-column path="age" header="Connected for"></vaadin-grid-column>
 				        <vaadin-grid-column  width="12em" header="Action" .renderer=${(root, column, data) => {
-                    render(html`<mwc-button class="red" @click=${() => this.removePeer(data.item.address, data.index)}><mwc-icon>delete</mwc-icon>Remove Peer</mwc-button>`, root)
+                    render(html`<mwc-button class="red" @click=${() => this.removePeer(data.item.address, data.index)}><mwc-icon>delete</mwc-icon>Remove Peer</mwc-button><mwc-button class="green" @click=${() => this.forceSyncPeer(data.item.address, data.index)}>Force Sync to Peer</mwc-button>`, root)
                 }}></vaadin-grid-column>
             </vaadin-grid>
 
@@ -270,7 +270,19 @@ class NodeManagement extends LitElement {
       </div>
     `;
   }
-
+	
+  forceSyncPeer (peerAddress, rowIndex) {
+    parentEpml
+      .request("apiCall", {
+        url: `/admin/forcesync`,
+        method: "POST",
+        body: peerAddress,
+      })
+      .then((res) => {
+        parentEpml.request('showSnackBar', "Starting Sync with Peer: " + peerAddress );
+      });
+  }
+	
   removePeer(peerAddress, rowIndex) {
     parentEpml
       .request("apiCall", {
@@ -282,12 +294,6 @@ class NodeManagement extends LitElement {
         parentEpml.request('showSnackBar', "Successfully removed Peer: " + peerAddress );
         this.peers.splice(rowIndex, 1);
       });
-  }
-
-  removePeerBtnRender(root, column, rowData) {
-    render(html`
-      <mwc-button class="red" @click=${this.removePeer}" slot="primaryAction"> Remove Peer </mwc-button>
-      `,root);
   }
 	
   onPageNavigation(pageUrl) {

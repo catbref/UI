@@ -502,6 +502,14 @@ class TradePortal extends LitElement {
 			}}
 									>
 									</vaadin-grid-column>
+									<vaadin-grid-column
+											resizable
+											header="Seller"
+											.renderer=${(root, column, data) => {
+												render(html`<span> ${data.item.qortalCreator} </span>`, root)
+											}}
+										>
+										</vaadin-grid-column>
 								</vaadin-grid>
 							</div>
 						</div>
@@ -644,6 +652,14 @@ class TradePortal extends LitElement {
 											}}
 									>
 									</vaadin-grid-column>
+									<vaadin-grid-column
+											resizable
+											header="Seller"
+											.renderer=${(root, column, data) => {
+												render(html`<span> ${data.item.qortalCreator} </span>`, root)
+											}}
+										>
+										</vaadin-grid-column>
 									<vaadin-grid-column resizable header="Amount (QORT)" path="qortAmount"></vaadin-grid-column>
 									<vaadin-grid-column resizable header="Total (${this.listedCoins.get(this.selectedCoin).coinCode})" path="foreignAmount"></vaadin-grid-column>
 									<vaadin-grid-column
@@ -716,7 +732,7 @@ class TradePortal extends LitElement {
 			<div id="trade-portal-page">
 				<div style="min-height:40px; display: flex; padding-bottom: 0px; margin: 2px 2px 0px 2px ;">
 					<h2 style="margin: 0 0 15px 0;line-height: 50px; display: inline;">Trade Portal - QORT/ </h2>
-					<mwc-select outlined id="coinSelectionMenu" @change=${(e) => this.setForeignCoin('LITECOIN')} label="Select your coin">
+					<mwc-select outlined id="coinSelectionMenu" label="Select your coin">
 						<mwc-list-item value="LITECOIN" selected></span> <span class="coinName ltc">LTC</span></mwc-list-item>
 						<mwc-list-item value="DOGECOIN"> <span class="coinName doge">DOGE</span></mwc-list-item>
 					</mwc-select>
@@ -769,8 +785,9 @@ class TradePortal extends LitElement {
 		this._openOrdersGrid.querySelector('#priceColumn').headerRenderer = function (root) {
 			root.innerHTML = '<vaadin-grid-sorter path="price" direction="asc">Price (' + _this.listedCoins.get(_this.selectedCoin).coinCode + ')</vaadin-grid-sorter>'
 		}
+		this.clearSellForm()
+		this.clearBuyForm()
 		this.updateWalletBalance()
-
 	}
 	displayTabContent(tab) {
 		const tabBuyContent = this.shadowRoot.getElementById('tab-buy-content')
@@ -852,6 +869,8 @@ class TradePortal extends LitElement {
 			coinSelectionMenu.addEventListener('change', function() {//handle the coin selection menu
 					_this.setForeignCoin(coinSelectionMenu.value)
 			})
+			_this.setForeignCoin('LITECOIN')//set default coin
+
 		})
 		parentEpml.imReady()
 
@@ -1457,9 +1476,7 @@ class TradePortal extends LitElement {
 		const fundingQortAmount = this.round(parseFloat(sellAmountInput) + 0.001) // Set default AT fees for processing to 0.001 QORT // TODO: remove hard-coded values
 
 		const makeRequest = async () => {
-			a
-			const _receivingAddress = null
-
+			let _receivingAddress = null
 			switch (this.selectedCoin) {
 				case 'LITECOIN':
 					_receivingAddress = this.selectedAddress.ltcWallet.address
@@ -1522,11 +1539,22 @@ class TradePortal extends LitElement {
 		this.buyBtnDisable = true
 
 		const qortalAtAddress = this.shadowRoot.getElementById('qortalAtAddress').value
+		let _foreignKey =""
+		switch (this.selectedCoin) {
+			case 'LITECOIN':
+				_foreignKey= this.selectedAddress.ltcWallet.derivedMasterPrivateKey
+				break
 
+			case 'DOGECOIN':
+				_foreignKey= this.selectedAddress.dogeWallet.derivedMasterPrivateKey
+				break
+			default:
+				break
+		}
 		const makeRequest = async () => {
 			const response = await parentEpml.request('tradeBotRespondRequest', {
 				atAddress: qortalAtAddress,
-				foreignKey: this.selectedAddress.ltcWallet.derivedMasterPrivateKey,
+				foreignKey: _foreignKey,
 				receivingAddress: this.selectedAddress.address,
 			})
 
@@ -2068,7 +2096,6 @@ class TradePortal extends LitElement {
 				replaceValue: this.selectedCoin,
 			},
 		]
-
 		workers.get(this.selectedCoin).handleStuckTradesConnectedWorker = this.inlineWorker(this.handleStuckTrades, modifiers)
 		workers.get(this.selectedCoin).handleStuckTradesConnectedWorker.postMessage(states)
 		workers.get(this.selectedCoin).handleStuckTradesConnectedWorker.addEventListener(

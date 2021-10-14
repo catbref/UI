@@ -350,6 +350,13 @@ export default class AltcoinHDWallet {
         // Append 1 byte '0x00' (to make the key data 33 bytes, DO THIS ONLY FOR PRIVATE KEYS )
         s.push(0)
 
+        //if the private key length is less than 32 let's add leading zeros 
+        if(this.privateKey.length<32){
+            for(let i=this.privateKey.length;i<32;i++){
+                s.push(0)
+            }
+        }
+
         // Append Private Key
         s.push(...this.privateKey)
 

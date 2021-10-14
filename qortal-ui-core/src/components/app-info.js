@@ -51,6 +51,7 @@ class AppInfo extends connect(store)(LitElement) {
                     --mdc-theme-on-primary: white;
                 }
                 #profileInMenu {
+                    flex: 0 0 100px;
                     padding:12px;
                     border-top: 1px solid #eee;
                     /* position: fixed;

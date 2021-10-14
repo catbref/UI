@@ -1,4 +1,3 @@
-
 import { STORE_WALLET, REMOVE_WALLET, UPDATE_STORED_WALLET_NAME } from '../user-action-types.js'
 
 export const doStoreWallet = (wallet, password, name, statusUpdateFn = () => { }) => {
@@ -20,7 +19,6 @@ const storeWallet = payload => {
         payload
     }
 }
-
 
 export const doRemoveWallet = (address) => {
     return (dispatch, getState) => {

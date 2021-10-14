@@ -17,7 +17,7 @@ import '@polymer/iron-collapse'
 import '@polymer/paper-spinner/paper-spinner-lite.js'
 
 import { doLogin, doSelectAddress } from '../../redux/app/app-actions.js'
-import { doStoreWallet } from '../../redux/user/user-actions.js'
+import { doStoreWallet, doRemoveWallet } from '../../redux/user/user-actions.js'
 
 import { createWallet } from 'qortal-ui-crypto'
 
@@ -105,35 +105,63 @@ class LoginSection extends connect(store)(LitElement) {
                     --paper-spinner-color: var(--mdc-theme-primary);
                     --paper-spinner-stroke-width: 2px;
                 }
+                #loginPages{
+                    overflow:visible;
+                }
+                #walletsPage {
+                    /*min-width: 500px;*/
+                }
                 #wallets {
-                    max-height: 400px;
-                    overflow-y:auto;
-                    overflow-x:hidden;
+                    max-height: 50vh;
                     border-bottom: 1px solid #eee;
                     border-top: 1px solid #eee;
+                    overflow-y: auto;
+                    box-shadow: 0 0 15px 0px rgb(0 0 0 / 10%);
+                    background: rgb(253 253 253 / 50%);
+                    margin: 2vh;
                 }
                 .wallet {
                     /* max-width: 300px; */
                     position: relative;
-                    padding: 12px;
+                    padding: 15px 60px 15px 15px;
                     cursor: pointer;
                     display: flex;
+                    border-bottom: solid 1px #dedede;
                 }
                 .wallet .wallet-details {
-                    padding-left:12px;
-                    flex: 1;
-                    min-width: 0;
+                    float: left;
+                    width: auto;
+                    height: 60px;
+                    display: block;
                 }
-                .wallet div .address{
+                .wallet .wallet-details p{
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     margin:0;
+                    height: 20px;
+                    font-size: 15px;
+                    line-height: 20px;
                 }
-                .wallet .wallet-details h3 {
-                    margin:0;
-                    padding: 6px 0;
-                    font-size:16px;
+                .wallet .walletAddress{
+                    height: 40px !important;
+                    line-height: 40px !important;
+                }
+                .wallet .walletName{
+                   
+                }
+                .wallet p span{
+                    color: #888;
+                    font-size: 12px;
+                    width: 50px;
+                    display: inline-block;
+                }
+                .removeWallet{
+                    position: absolute;
+                    right: 5px;
+                    top: 20px;
+                    color: tomato;
+                    --mdc-icon-size: 30px;                      
                 }
                 .login-option {
                     max-width: 300px;
@@ -190,11 +218,6 @@ class LoginSection extends connect(store)(LitElement) {
                     padding:14px;
                     text-align:left;
                 }
-                iron-pages h3{
-                    color: #333;
-                    font-family: "Roboto mono", monospace;
-                    font-weight: 300;
-                }
                 #pagesContainer {
                     max-height: calc(var(--window-height) - 184px);
                 }
@@ -231,15 +254,16 @@ class LoginSection extends connect(store)(LitElement) {
                                     <p style="padding: 0 0 6px 0;">You need to create or save an account before you can log in!</p>
                                 ` : ''}
                                 ${Object.entries(this.wallets || {}).map(wallet => html`
-                                    <div class="wallet" @click=${() => this.selectWallet(wallet[1])}>
-                                        <paper-ripple></paper-ripple>
-                                        <div>
-                                            <mwc-icon class='accountIcon'>account_circle</mwc-icon>
+                                    <div class="wallet">
+                                        <div class="selectWallet" @click=${() => this.selectWallet(wallet[1])}>
+                                            <paper-ripple></paper-ripple>
+                                            <div class='wallet-details'>
+                                                <!--h3 class='walletName'><span>Name : </span>${wallet[1].name || wallet[1].address0.substring(0, 5)}</h3-->
+                                                <p class='walletName'><span>Name</span>${wallet[1].name || "No saved name"}</p>
+                                                <p class="walletAddress"><span>Address</span>${wallet[1].address0}</p>
+                                            </div>
                                         </div>
-                                        <div class="wallet-details">
-                                            <h3>${wallet[1].name || wallet[1].address0.substring(0, 5)}</h3>
-                                            <p class="address">${wallet[1].address0}</p>
-                                        </div>
+                                        <mwc-icon-button class="removeWallet" @click=${(e) => this.removeWallet(wallet[1].address0)} icon="clear"></mwc-icon-button>
                                     </div>
                                 `)}
                             </div>
@@ -336,6 +360,17 @@ class LoginSection extends connect(store)(LitElement) {
         this.selectedPage = 'unlockStored'
     }
 
+    removeWallet(walletAddress){
+        if(window.confirm('Are you sure you want to remove this wallet from saved wallets?')) {
+            delete store.getState().user.storedWallets[walletAddress]
+            this.wallets=store.getState().user.storedWallets
+            store.dispatch(
+                doRemoveWallet(walletAddress)
+            )//.catch(err => console.error(err))
+            this.cleanup()
+        }
+    }
+
     stateChanged(state) {
         this.loggedIn = state.app.loggedIn
         this.wallets = state.user.storedWallets
@@ -401,19 +436,18 @@ class LoginSection extends connect(store)(LitElement) {
     }
 
     showPassword(selectedPage) {
-        return (
+        let willBeShown= (
             this.saveInBrowser && [
                 'unlockBackedUpSeed',
                 'seed',
                 'phrase'
             ].includes(selectedPage)
-        ) ||
-            (
-                [
-                    'unlockBackedUpSeed',
-                    'unlockStored'
-                ].includes(selectedPage)
-            )
+            ) || (['unlockBackedUpSeed','unlockStored'].includes(selectedPage))
+
+        if(willBeShown)//if the password will be displayed lt's give it focus 
+            this.shadowRoot.getElementById('password').focus()
+
+        return willBeShown
     }
 
     get walletSources() {

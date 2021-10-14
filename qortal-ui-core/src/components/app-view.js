@@ -50,11 +50,11 @@ class AppView extends connect(store)(LitElement) {
             #sideBar {
                 height: 100vh;
                 display: flex;
-                flex: 1 1;
                 flex-direction: column;
             }
             .sideBarMenu{
                 overflow-y: auto;
+                flex: 1 1;
             }
             #sideBar::-webkit-scrollbar {
                 width: 7px;
@@ -77,19 +77,17 @@ class AppView extends connect(store)(LitElement) {
     render() {
         return html`
         <style>
-
         </style>
         <app-drawer-layout responsive-width='${getComputedStyle(document.body).getPropertyValue('--layout-breakpoint-desktop')}' fullbleed >
             <app-drawer swipe-open slot="drawer" id="appdrawer">
                 <app-header-layout>
                     <div id="sideBar">
-                        <div>
-                            <wallet-profile></wallet-profile>
-                        </div>
+                        <wallet-profile></wallet-profile>
                         <div class="sideBarMenu">
                             <sidenav-menu></sidenav-menu>
-                            <app-info></app-info>
                         </div>
+                        <app-info></app-info>
+
                     </div>
                 </app-header-layout>
             </app-drawer>

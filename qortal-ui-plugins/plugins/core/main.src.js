@@ -66,6 +66,15 @@ parentEpml.ready().then(() => {
             parent: false
         },
         {
+            url: 'websites',
+            domain: 'core',
+            page: 'websites/index.html',
+            title: 'Websites',
+            icon: 'assignment_ind',
+            menus: [],
+            parent: false
+        },
+        {
             url: 'q-chat',
             domain: 'core',
             page: 'messaging/q-chat/index.html',

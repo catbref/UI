@@ -100,6 +100,10 @@ const generateForPlugins = () => {
       out: "plugins/core/name-registration/name-registration.js",
     },
     {
+      in: "plugins/core/websites/websites.src.js",
+      out: "plugins/core/websites/websites.js",
+    },
+    {
       in: "plugins/core/messaging/messaging.src.js",
       out: "plugins/core/messaging/messaging.js",
     },

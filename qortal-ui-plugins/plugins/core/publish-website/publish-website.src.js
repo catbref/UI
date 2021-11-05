@@ -329,4 +329,4 @@ class WebsitesPage extends LitElement {
 	}
 }
 
-window.customElements.define('websites-page', WebsitesPage)
+window.customElements.define('publish-website', WebsitesPage)

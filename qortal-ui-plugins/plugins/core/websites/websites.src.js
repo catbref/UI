@@ -97,6 +97,9 @@ class WebsitesPage extends LitElement {
 		let registeredName = this.shadowRoot.getElementById('registeredName').value
 		let path = this.shadowRoot.getElementById('path').value
 
+		this.successMessage = ''
+		this.errorMessage = ''
+
 		if (registeredName === '') {
 			parentEpml.request('showSnackBar', 'Please select a registered name to publish data for')
 	    }

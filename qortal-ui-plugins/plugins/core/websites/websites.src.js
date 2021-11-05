@@ -112,7 +112,7 @@ class Websites extends LitElement {
                         <vaadin-grid-column header="Name" .renderer=${(root, column, data) => {
                             render(html`${this.renderName(data.item)}`, root)
                         }}></vaadin-grid-column>
-                        <vaadin-grid-column width="9.8rem" flex-grow="0" header="Action" .renderer=${(root, column, data) => {
+                        <vaadin-grid-column width="10rem" flex-grow="0" header="Action" .renderer=${(root, column, data) => {
                             render(html`${this.renderFollowUnfollowButton(data.item)}`, root)
                         }}></vaadin-grid-column>
                     </vaadin-grid>
@@ -208,11 +208,11 @@ class Websites extends LitElement {
 
         if (this.followedNames.indexOf(name) === -1) {
             // render follow button
-            return html`<mwc-button @click=${() => this.followName(websiteObj)}><mwc-icon>queue</mwc-icon>Follow</mwc-button>`
+            return html`<mwc-button @click=${() => this.followName(websiteObj)}><mwc-icon>add_to_queue</mwc-icon>&nbsp;Follow</mwc-button>`
         }
         else {
             // render unfollow button
-            return html`<mwc-button @click=${() => this.unfollowName(websiteObj)}><mwc-icon>queue</mwc-icon>Unfollow</mwc-button>`
+            return html`<mwc-button @click=${() => this.unfollowName(websiteObj)}><mwc-icon>remove_from_queue</mwc-icon>&nbsp;Unfollow</mwc-button>`
         }
     }
 

@@ -61,7 +61,7 @@ parentEpml.ready().then(() => {
             domain: 'core',
             page: 'websites/index.html',
             title: 'Websites',
-            icon: 'assignment_ind',
+            icon: 'computer',
             menus: [],
             parent: false
         },

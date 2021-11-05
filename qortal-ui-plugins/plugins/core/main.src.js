@@ -57,10 +57,10 @@ parentEpml.ready().then(() => {
             parent: false
         },
         {
-            url: 'websites',
+            url: 'publish-website',
             domain: 'core',
-            page: 'websites/index.html',
-            title: 'Websites',
+            page: 'publish-website/index.html',
+            title: 'Publish Website',
             icon: 'assignment_ind',
             menus: [],
             parent: false

@@ -250,7 +250,7 @@ class Websites extends LitElement {
             // this.resources = []
 
             let resources = await parentEpml.request('apiCall', {
-                url: `/site?limit=0&reverse=true`
+                url: `/arbitrary/resources?service=WEBSITE&limit=0&reverse=true`
             })
 
             this.resources = resources

@@ -128,10 +128,11 @@ class WebBrowser extends LitElement {
 		this.url = 'about:blank'
 
 		const displayWebpage = () => {
+			const myNode = window.parent.reduxStore.getState().app.nodeConfig.knownNodes[window.parent.reduxStore.getState().app.nodeConfig.node]
+			const nodeUrl = myNode.protocol + '://' + myNode.domain + ':' + myNode.port
             const urlParams = new URLSearchParams(window.location.search);
 			const name = urlParams.get('name');
-			const node = "http://127.0.0.1:12393" // TODO: make this dynamic
-			this.url = node + "/site/" + name;
+			this.url = nodeUrl + "/site/" + name;
         }
 
 		let configLoaded = false

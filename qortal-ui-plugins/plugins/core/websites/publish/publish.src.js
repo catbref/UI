@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit-element'
 import { render } from 'lit-html'
-import { Epml } from '../../../epml'
+import { Epml } from '../../../../epml'
 
 import '@material/mwc-button'
 import '@material/mwc-textfield'
@@ -11,7 +11,7 @@ import '@polymer/paper-progress/paper-progress.js'
 
 const parentEpml = new Epml({ type: 'WINDOW', source: window.parent })
 
-class WebsitesPage extends LitElement {
+class PublishData extends LitElement {
 	static get properties() {
 		return {
 			names: { type: Array },
@@ -329,4 +329,4 @@ class WebsitesPage extends LitElement {
 	}
 }
 
-window.customElements.define('publish-website', WebsitesPage)
+window.customElements.define('publish-data', PublishData)

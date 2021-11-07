@@ -108,6 +108,10 @@ const generateForPlugins = () => {
       out: "plugins/core/websites/publish/publish.js",
     },
     {
+      in: "plugins/core/websites/browser/browser.src.js",
+      out: "plugins/core/websites/browser/browser.js",
+    },
+    {
       in: "plugins/core/messaging/messaging.src.js",
       out: "plugins/core/messaging/messaging.js",
     },

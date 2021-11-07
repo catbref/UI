@@ -198,9 +198,8 @@ class Websites extends LitElement {
 
     renderName(websiteObj) {
         let name = websiteObj.name
-
-        // TODO: use dynamic node URL
-        return html`<a class="visitSite" href="http://127.0.0.1:12393/site/${name}">${name}</a>`
+        
+        return html`<a class="visitSite" href="browser/index.html?name=${name}">${name}</a>`
     }
 
     renderFollowUnfollowButton(websiteObj) {

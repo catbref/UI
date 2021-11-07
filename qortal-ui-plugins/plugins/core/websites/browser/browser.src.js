@@ -145,7 +145,6 @@ class WebBrowser extends LitElement {
             parentEpml.subscribe('config', c => {
 				this.config = JSON.parse(c)
                 if (!configLoaded) {
-					console.log("config: " + c);
                     displayWebpage()
                     configLoaded = true
                 }

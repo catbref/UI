@@ -126,7 +126,7 @@ class Websites extends LitElement {
     }
 
     publishWebsite() {
-        window.location.href = "/plugin/core/publish-website/index.html"
+        window.location.href = "publish/index.html"
     }
 
     async followName(websiteObj) {

@@ -205,6 +205,11 @@ class Websites extends LitElement {
     renderFollowUnfollowButton(websiteObj) {
         let name = websiteObj.name
 
+        // Only show the follow/unfollow button if we have permission to modify the list on this node
+        if (this.followedNames == null || !Array.isArray(this.followedNames)) {
+            return html``
+        }
+
         if (this.followedNames.indexOf(name) === -1) {
             // render follow button
             return html`<mwc-button @click=${() => this.followName(websiteObj)}><mwc-icon>add_to_queue</mwc-icon>&nbsp;Follow</mwc-button>`

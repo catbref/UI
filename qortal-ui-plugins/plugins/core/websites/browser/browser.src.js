@@ -132,7 +132,7 @@ class WebBrowser extends LitElement {
 			const nodeUrl = myNode.protocol + '://' + myNode.domain + ':' + myNode.port
             const urlParams = new URLSearchParams(window.location.search);
 			const name = urlParams.get('name');
-			this.url = nodeUrl + "/site/" + name;
+			this.url = nodeUrl + "/render/WEBSITE/" + name;
         }
 
 		let configLoaded = false

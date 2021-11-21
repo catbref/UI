@@ -14,6 +14,8 @@ const parentEpml = new Epml({ type: 'WINDOW', source: window.parent })
 class Websites extends LitElement {
     static get properties() {
         return {
+            service: { type: String },
+			identifier: { type: String },
             loading: { type: Boolean },
             resources: { type: Array },
             followedNames: { type: Array },
@@ -91,6 +93,8 @@ class Websites extends LitElement {
 
     constructor() {
         super()
+        this.service = "WEBSITE"
+		this.identifier = null
         this.selectedAddress = {}
         this.resources = []
         this.followedNames = []
@@ -199,7 +203,7 @@ class Websites extends LitElement {
     renderName(websiteObj) {
         let name = websiteObj.name
         
-        return html`<a class="visitSite" href="browser/index.html?name=${name}">${name}</a>`
+        return html`<a class="visitSite" href="browser/index.html?name=${name}&service=${this.service}">${name}</a>`
     }
 
     renderFollowUnfollowButton(websiteObj) {
@@ -254,7 +258,7 @@ class Websites extends LitElement {
             // this.resources = []
 
             let resources = await parentEpml.request('apiCall', {
-                url: `/arbitrary/resources?service=WEBSITE&limit=0&reverse=true`
+                url: `/arbitrary/resources?service=${this.service}&limit=0&reverse=true`
             })
 
             this.resources = resources

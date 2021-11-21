@@ -15,6 +15,8 @@ class WebBrowser extends LitElement {
 	static get properties() {
 		return {
 			url: { type: String },
+			name: { type: String },
+			service: { type: String },
 		}
 	}
 
@@ -127,12 +129,29 @@ class WebBrowser extends LitElement {
 		super()
 		this.url = 'about:blank'
 
-		const displayWebpage = () => {
+		const urlParams = new URLSearchParams(window.location.search);
+		this.name = urlParams.get('name');
+		this.service = urlParams.get('service');
+
+		const render = () => {
 			const myNode = window.parent.reduxStore.getState().app.nodeConfig.knownNodes[window.parent.reduxStore.getState().app.nodeConfig.node]
 			const nodeUrl = myNode.protocol + '://' + myNode.domain + ':' + myNode.port
-            const urlParams = new URLSearchParams(window.location.search);
-			const name = urlParams.get('name');
-			this.url = nodeUrl + "/render/WEBSITE/" + name;
+			this.url = `${nodeUrl}/render/${this.service}/${this.name}`;
+        }
+
+		const authorizeAndRender = () => {
+            parentEpml.request('apiCall', {
+                url: `/render/authorize/${this.service}/${this.name}`,
+				method: "POST"
+            }).then(res => {
+				console.log(res)
+				if (res.error) {
+					// Authorization problem - API key incorrect?
+				}
+				else {
+					render()
+				}
+            })
         }
 
 		let configLoaded = false
@@ -146,7 +165,7 @@ class WebBrowser extends LitElement {
             parentEpml.subscribe('config', c => {
 				this.config = JSON.parse(c)
                 if (!configLoaded) {
-                    displayWebpage()
+                    authorizeAndRender()
                     configLoaded = true
                 }
             })

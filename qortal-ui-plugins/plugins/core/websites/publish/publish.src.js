@@ -18,6 +18,7 @@ class PublishData extends LitElement {
 			service: { type: String },
 			identifier: { type: String },
 			category: { type: String },
+			uploadType: { type: String },
 			showService: { type: Boolean },
 			showIdentifier: { type: Boolean },
 			serviceLowercase: { type: String },
@@ -81,11 +82,16 @@ class PublishData extends LitElement {
 						</mwc-select>
 					</p>
 					<p>
-						<mwc-textfield style="width:100%;" label="Local path to static files" id="path" type="text" value="${this.path}"></mwc-textfield>
+						${this.uploadType === "file" ?
+							html`<input style="width:100%;" id="file" type="file" />` : 
+							html`<mwc-textfield style="width:100%;" label="Local path to static files" id="path" type="text" value="${this.path}"></mwc-textfield>`}
 					</p>
-					${this.showService ? html`<p><mwc-textfield style="width:100%;" label="Service" id="service" type="text" value="${this.service}"></mwc-textfield></p>` : ''}
-					${this.showIdentifier ? html`<p><mwc-textfield style="width:100%;" label="Identifier" id="identifier" type="text" value="${this.identifier != null ? this.identifier : ''}"></mwc-textfield></p>` : ''}
-					
+					<p style="display: ${this.showService ? 'block' : 'none'}">
+						<mwc-textfield style="width:100%;" label="Service" id="service" type="text" value="${this.service}"></mwc-textfield>
+					</p>
+					<p style="display: ${this.showIdentifier ? 'block' : 'none'}">
+						<mwc-textfield style="width:100%;" label="Identifier" id="identifier" type="text" value="${this.identifier != null ? this.identifier : ''}"></mwc-textfield>
+					</p>
 					
 
 					<p style="color:red">${this.errorMessage}</p>
@@ -106,9 +112,18 @@ class PublishData extends LitElement {
 
 	doPublish(e) {
 		let registeredName = this.shadowRoot.getElementById('registeredName').value
-		let path = this.shadowRoot.getElementById('path').value
 		let service = this.shadowRoot.getElementById('service').value
 		let identifier = this.shadowRoot.getElementById('identifier').value
+
+		let file;
+		let path;
+
+		if (this.uploadType === "file") {
+			file = this.shadowRoot.getElementById('file').files[0]
+		}
+		else if (this.uploadType === "path") {
+			path = this.shadowRoot.getElementById('path').value
+		}
 
 		this.successMessage = ''
 		this.errorMessage = ''
@@ -116,18 +131,21 @@ class PublishData extends LitElement {
 		if (registeredName === '') {
 			parentEpml.request('showSnackBar', 'Please select a registered name to publish data for')
 	    }
-		else if (path === '') {
+		else if (this.uploadType === "file" && file == null) {
+			parentEpml.request('showSnackBar', 'Please select a file to host')
+	    }
+		else if (this.uploadType === "path" && path === '') {
 			parentEpml.request('showSnackBar', 'Please enter the directory path containing the static content')
 	    }
 	    else if (service === '') {
 			parentEpml.request('showSnackBar', 'Please enter a service name')
 		}
 		else {
-			this.publishData(registeredName, path, service, identifier)
+			this.publishData(registeredName, path, file, service, identifier)
 		}
 	}
 
-	async publishData(registeredName, path, service, identifier) {
+	async publishData(registeredName, path, file, service, identifier) {
 		this.loading = true
 		this.btnDisable = true
 
@@ -155,7 +173,7 @@ class PublishData extends LitElement {
 				throw new Error(this.errorMessage);
 			}
 
-			let transactionBytes = await uploadData(registeredName, path)
+			let transactionBytes = await uploadData(registeredName, path, file)
 			if (transactionBytes.error) {
 				this.errorMessage = "Error: " + transactionBytes.message
 				showError(this.errorMessage)
@@ -175,17 +193,26 @@ class PublishData extends LitElement {
 			this.successMessage = 'Transaction successful!'
 		}
 
-		const uploadData = async (registeredName, path) => {
+		const uploadData = async (registeredName, path, file) => {
+			let postBody = path
+			let urlSuffix = ""
+			// If we're sending file data, use the /base64 version of the POST /arbitrary/* API
+			if (file != null) {
+				let fileBuffer = new Uint8Array(await file.arrayBuffer())
+				postBody = Buffer.from(fileBuffer).toString('base64');
+				urlSuffix = "/base64"
+			}
+
 			let uploadDataUrl = `/arbitrary/${this.service}/${registeredName}`
 			if (identifier != null && identifier.trim().length > 0) {
-				uploadDataUrl = `/arbitrary/${service}/${registeredName}/${this.identifier}`
+				uploadDataUrl = `/arbitrary/${service}/${registeredName}/${this.identifier}${urlSuffix}`
 			}
 
 			let uploadDataRes = await parentEpml.request('apiCall', {
 				type: 'api',
 				method: 'POST',
 				url: `${uploadDataUrl}`,
-				body: `${path}`,
+				body: `${postBody}`,
 			})
 
 			return uploadDataRes
@@ -278,11 +305,12 @@ class PublishData extends LitElement {
 		this.service = urlParams.get('service')
 		this.identifier = urlParams.get('identifier')
 		this.category = urlParams.get('category')
+		this.uploadType = urlParams.get('uploadType') !== "null" ? urlParams.get('uploadType') : "file"
 
 		if (urlParams.get('showService') === "true") {
 			this.showService = true
 		}
-		if (urlParams.get('showIdentifier')  === "true") {
+		if (urlParams.get('showIdentifier') === "true") {
 			this.showIdentifier = true
 		}
 		

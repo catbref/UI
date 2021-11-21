@@ -14,6 +14,8 @@ const parentEpml = new Epml({ type: 'WINDOW', source: window.parent })
 class PublishData extends LitElement {
 	static get properties() {
 		return {
+			service: { type: String },
+			identifier: { type: String },
 			names: { type: Array },
 			registeredName: { type: String },
 			selectedName: { type: String },
@@ -163,10 +165,15 @@ class PublishData extends LitElement {
 		}
 
 		const uploadData = async (registeredName, path) => {
+			let uploadDataUrl = `/arbitrary/${this.service}/${registeredName}`
+			if (this.identifier != null) {
+				uploadDataUrl = `/arbitrary/${this.service}/${registeredName}/${this.identifier}`
+			}
+
 			let uploadDataRes = await parentEpml.request('apiCall', {
 				type: 'api',
 				method: 'POST',
-				url: `/arbitrary/WEBSITE/${registeredName}`,
+				url: `${uploadDataUrl}`,
 				body: `${path}`,
 			})
 
@@ -251,6 +258,8 @@ class PublishData extends LitElement {
 
 	constructor() {
 		super()
+		this.service = "WEBSITE"
+		this.identifier = null
 		this.names = []
 		this.registeredName = ''
 		this.selectedName = 'invalid'
@@ -261,7 +270,6 @@ class PublishData extends LitElement {
 		this.btnDisable = false
 
 		const fetchNames = () => {
-            console.log('=========================================')
             parentEpml.request('apiCall', {
                 url: `/names/address/${this.selectedAddress.address}?limit=0&reverse=true`
             }).then(res => {

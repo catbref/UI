@@ -14,8 +14,13 @@ const parentEpml = new Epml({ type: 'WINDOW', source: window.parent })
 class PublishData extends LitElement {
 	static get properties() {
 		return {
+			name: { type: String },
 			service: { type: String },
 			identifier: { type: String },
+			category: { type: String },
+			showService: { type: Boolean },
+			showIdentifier: { type: Boolean },
+			serviceLowercase: { type: String },
 			names: { type: Array },
 			registeredName: { type: String },
 			selectedName: { type: String },
@@ -24,7 +29,7 @@ class PublishData extends LitElement {
 
 			amount: { type: Number },
 			errorMessage: { type: String },
-			websitesLoading: { type: Boolean },
+			loading: { type: Boolean },
 			btnDisable: { type: Boolean },
 		}
 	}
@@ -41,11 +46,11 @@ class PublishData extends LitElement {
 				--paper-input-container-focus-color: var(--mdc-theme-primary);
 			}
 
-			#websitesWrapper paper-button {
+			#publishWrapper paper-button {
 				float: right;
 			}
 
-			#websitesWrapper .buttons {
+			#publishWrapper .buttons {
 				/* --paper-button-ink-color: var(--paper-green-500);
                     color: var(--paper-green-500); */
 				width: auto !important;
@@ -63,11 +68,11 @@ class PublishData extends LitElement {
 
 	render() {
 		return html`
-			<div id="websitesWrapper" style="width:auto; padding:10px; background: #fff; height:100vh;">
+			<div id="publishWrapper" style="width:auto; padding:10px; background: #fff; height:100vh;">
 				<div class="layout horizontal center" style=" padding:12px 15px;">
 					<paper-card style="width:100%; max-width:740px;">
 						<div style="background-color: ${this.selectedAddress.color}; margin:0; color: ${this.textColor(this.selectedAddress.textColor)};">
-							<h3 style="margin:0; padding:8px 0;">Publish / Update Website</h3>
+							<h3 style="margin:0; padding:8px 0; text-transform:capitalize;">Publish / Update ${this.category}</h3>
 						</div>
 					</paper-card>
 					<p>
@@ -78,11 +83,15 @@ class PublishData extends LitElement {
 					<p>
 						<mwc-textfield style="width:100%;" label="Local path to static files" id="path" type="text" value="${this.path}"></mwc-textfield>
 					</p>
+					${this.showService ? html`<p><mwc-textfield style="width:100%;" label="Service" id="service" type="text" value="${this.service}"></mwc-textfield></p>` : ''}
+					${this.showIdentifier ? html`<p><mwc-textfield style="width:100%;" label="Identifier" id="identifier" type="text" value="${this.identifier != null ? this.identifier : ''}"></mwc-textfield></p>` : ''}
+					
+					
 
 					<p style="color:red">${this.errorMessage}</p>
 					<p style="color:green;word-break: break-word;">${this.successMessage}</p>
 
-					${this.websitesLoading ? html` <paper-progress indeterminate style="width:100%; margin:4px;"></paper-progress> ` : ''}
+					${this.loading ? html` <paper-progress indeterminate style="width:100%; margin:4px;"></paper-progress> ` : ''}
 
 					<div class="buttons">
 						<div>
@@ -98,6 +107,8 @@ class PublishData extends LitElement {
 	doPublish(e) {
 		let registeredName = this.shadowRoot.getElementById('registeredName').value
 		let path = this.shadowRoot.getElementById('path').value
+		let service = this.shadowRoot.getElementById('service').value
+		let identifier = this.shadowRoot.getElementById('identifier').value
 
 		this.successMessage = ''
 		this.errorMessage = ''
@@ -106,18 +117,18 @@ class PublishData extends LitElement {
 			parentEpml.request('showSnackBar', 'Please select a registered name to publish data for')
 	    }
 		else if (path === '') {
-		 	parentEpml.request('showSnackBar', 'Please enter a path to the directory containing the static website')
+			parentEpml.request('showSnackBar', 'Please enter the directory path containing the static content')
+	    }
+	    else if (service === '') {
+			parentEpml.request('showSnackBar', 'Please enter a service name')
 		}
 		else {
-			this.publishWebsite()
+			this.publishData(registeredName, path, service, identifier)
 		}
 	}
 
-	async publishWebsite() {
-		let registeredName = this.shadowRoot.getElementById('registeredName').value
-		let path = this.shadowRoot.getElementById('path').value
-
-		this.websitesLoading = true
+	async publishData(registeredName, path, service, identifier) {
+		this.loading = true
 		this.btnDisable = true
 
 		const validateName = async (receiverName) => {
@@ -130,7 +141,7 @@ class PublishData extends LitElement {
 		}
 
 		const showError = async (errorMessage) => {
-			this.websitesLoading = false
+			this.loading = false
 			this.btnDisable = false
 			this.successMessage = ''
 			console.error(errorMessage)
@@ -159,15 +170,15 @@ class PublishData extends LitElement {
 			}
 
 			this.btnDisable = false
-			this.websitesLoading = false
+			this.loading = false
 			this.errorMessage = ''
 			this.successMessage = 'Transaction successful!'
 		}
 
 		const uploadData = async (registeredName, path) => {
 			let uploadDataUrl = `/arbitrary/${this.service}/${registeredName}`
-			if (this.identifier != null) {
-				uploadDataUrl = `/arbitrary/${this.service}/${registeredName}/${this.identifier}`
+			if (identifier != null && identifier.trim().length > 0) {
+				uploadDataUrl = `/arbitrary/${service}/${registeredName}/${this.identifier}`
 			}
 
 			let uploadDataRes = await parentEpml.request('apiCall', {
@@ -258,15 +269,36 @@ class PublishData extends LitElement {
 
 	constructor() {
 		super()
-		this.service = "WEBSITE"
-		this.identifier = null
+
+		this.showService = false
+		this.showIdentifier = false
+
+		const urlParams = new URLSearchParams(window.location.search)
+		this.name = urlParams.get('name')
+		this.service = urlParams.get('service')
+		this.identifier = urlParams.get('identifier')
+		this.category = urlParams.get('category')
+
+		if (urlParams.get('showService') === "true") {
+			this.showService = true
+		}
+		if (urlParams.get('showIdentifier')  === "true") {
+			this.showIdentifier = true
+		}
+		
+		if (this.identifier != null) {
+			if (this.identifier === "null" || this.identifier.trim().length == 0) {
+				this.identifier = null
+			}
+		}
+
 		this.names = []
 		this.registeredName = ''
 		this.selectedName = 'invalid'
 		this.path = ''
 		//this.selectedAddress = {}
 		this.errorMessage = ''
-		this.websitesLoading = false
+		this.loading = false
 		this.btnDisable = false
 
 		const fetchNames = () => {

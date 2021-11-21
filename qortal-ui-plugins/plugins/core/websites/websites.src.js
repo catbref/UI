@@ -130,7 +130,7 @@ class Websites extends LitElement {
     }
 
     publishWebsite() {
-        window.location.href = "publish/index.html"
+        window.location.href = `publish/index.html?service=${this.service}&identifier=${this.identifier}&category=Website&showService=false&showIdentifier=false`
     }
 
     async followName(websiteObj) {

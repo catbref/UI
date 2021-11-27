@@ -19,6 +19,7 @@ class PublishData extends LitElement {
 			identifier: { type: String },
 			category: { type: String },
 			uploadType: { type: String },
+			showName: { type: Boolean },
 			showService: { type: Boolean },
 			showIdentifier: { type: Boolean },
 			serviceLowercase: { type: String },
@@ -76,7 +77,8 @@ class PublishData extends LitElement {
 							<h3 style="margin:0; padding:8px 0; text-transform:capitalize;">Publish / Update ${this.category}</h3>
 						</div>
 					</paper-card>
-					<p>
+					<!-- TODO: adapt this dropdown to list all names on the account. Right now it's hardcoded to a single name -->
+					<p style="display: ${this.showName ? 'block' : 'none'}">
 						<mwc-select id="registeredName" label="Select Name" index="0" @selected=${(e) => this.selectName(e)} style="min-width: 130px; max-width:100%; width:100%;">
 							<mwc-list-item value="${this.registeredName}">${this.registeredName}</mwc-list-item>
 						</mwc-select>
@@ -115,6 +117,11 @@ class PublishData extends LitElement {
 		let service = this.shadowRoot.getElementById('service').value
 		let identifier = this.shadowRoot.getElementById('identifier').value
 
+		// If name is hidden, use the value passed in via the name parameter
+		if (!this.showName) {
+			registeredName = this.name
+		}
+
 		let file;
 		let path;
 
@@ -129,6 +136,7 @@ class PublishData extends LitElement {
 		this.errorMessage = ''
 
 		if (registeredName === '') {
+			this.showName = true
 			parentEpml.request('showSnackBar', 'Please select a registered name to publish data for')
 	    }
 		else if (this.uploadType === "file" && file == null) {
@@ -297,6 +305,7 @@ class PublishData extends LitElement {
 	constructor() {
 		super()
 
+		this.showName = false;
 		this.showService = false
 		this.showIdentifier = false
 
@@ -307,6 +316,9 @@ class PublishData extends LitElement {
 		this.category = urlParams.get('category')
 		this.uploadType = urlParams.get('uploadType') !== "null" ? urlParams.get('uploadType') : "file"
 
+		if (urlParams.get('showName') === "true") {
+			this.showName = true
+		}
 		if (urlParams.get('showService') === "true") {
 			this.showService = true
 		}

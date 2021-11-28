@@ -6,7 +6,7 @@ import { inputKeyCodes } from '../../utils/keyCodes.js';
 
 import './ChatScroller.js'
 import './TimeAgo.js'
-import {MuteBlock} from './MuteBlockUser.js'
+import {MuteBlockUser} from './MuteBlockUser.js'
 import  './MuteBlockTag.js'
 import { EmojiPicker } from 'emoji-picker-js';
 import '@polymer/paper-spinner/paper-spinner-lite.js'
@@ -17,7 +17,7 @@ const parentEpml = new Epml({ type: 'WINDOW', source: window.parent })
 const selectedNode=window.parent.reduxStore.getState().app.nodeConfig.knownNodes[window.parent.reduxStore.getState().app.nodeConfig.node]
 const isMyNode = (selectedNode.domain=="127.0.0.1" || selectedNode.domain=="localhost") && selectedNode.enableManagement
 
-let mb = new MuteBlock()
+//let mb = new MuteBlockUser()
 
 class ChatPage extends LitElement {
     static get properties() {
@@ -190,8 +190,9 @@ class ChatPage extends LitElement {
         }
     }
     processMessages(messages, isInitial) {
-        messages=mb.filterBlockedUsers(messages)
-
+        messages=MuteBlockUser.filterBlockedUsers(messages)
+        messages=MuteBlockUser.filterMutedUsers(messages)
+        
         if (isInitial) {
             this.messages = messages.map((eachMessage) => {
                 if (eachMessage.isText === true) {

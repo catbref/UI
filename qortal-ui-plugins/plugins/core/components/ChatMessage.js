@@ -4,6 +4,7 @@ import { Epml } from '../../../epml.js'
 
 import { escape } from 'html-escaper';
 import '@material/mwc-icon-button'
+import  './MuteBlockTag.js'
 
 //Check if the current user is connected over localhost to a node, and is node management enabled
 const selectedNode=window.parent.reduxStore.getState().app.nodeConfig.knownNodes[window.parent.reduxStore.getState().app.nodeConfig.node]

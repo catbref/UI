@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit-element'
 
 import { escape } from 'html-escaper';
+import  './MuteBlockTag.js'
 
 //Check if the current user is connected over localhost to a node, and is node management enabled
 const selectedNode=window.parent.reduxStore.getState().app.nodeConfig.knownNodes[window.parent.reduxStore.getState().app.nodeConfig.node]

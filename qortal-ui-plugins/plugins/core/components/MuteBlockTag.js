@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit-element'
 import '@material/mwc-icon-button'
-import {MuteBlock} from './MuteBlockUser.js'
+import {MuteBlockUser} from './MuteBlockUser.js'
 
 //let mb = new MuteBlock()
 
@@ -50,12 +50,12 @@ class MuteBlockTag extends LitElement {
     block(){// takes an address or an array of addresses to be blocked
         console.log("sending block call with data ")
         
-        MuteBlock.block(this.concernedaddress,this.concernedname)
+        MuteBlockUser.block(this.concernedaddress,this.concernedname)
     }
      mute(){
         console.log("sending mute call with data ")
         //this.blockedSenders.push(addr)
-        MuteBlock.mute(this.concernedaddress,this.concernedname)
+        MuteBlockUser.mute(this.concernedaddress,this.concernedname)
 
     }
 }

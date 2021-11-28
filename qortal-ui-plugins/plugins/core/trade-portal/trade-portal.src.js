@@ -777,6 +777,7 @@ class TradePortal extends LitElement {
 	}
 	
 	setForeignCoin(coin) {//change the active coin, this function got auto called by the menu firing a change event after it loads
+		console.log("set coin : "+coin)
 		let _this = this
 		this.selectedCoin = coin
 		this.isLoadingHistoricTrades = true
@@ -1932,6 +1933,7 @@ class TradePortal extends LitElement {
 	}
 
 	createConnection() {
+		console.log("create connection")
 		if (workers.get(this.selectedCoin).tradesConnectedWorker !== null) {// don't create another one if we already have one
 			this.isLoadingHistoricTrades = false
 			this.isLoadingOpenTrades = false
@@ -1980,6 +1982,7 @@ class TradePortal extends LitElement {
 			{ passive: true }
 		)
 		workers.get(this.selectedCoin).tradesConnectedWorker.postMessage({ type: "set_coin", content: this.selectedCoin })
+		console.log("end of create connection")
 	}
 
 	handleStuckTrades() {
@@ -2053,7 +2056,6 @@ class TradePortal extends LitElement {
 				default:
 					break
 			}
-
 			if (isHandleTradesDone === true && isHandleStuckOffersDone === true) return workers.get(this.selectedCoin).handleStuckTradesConnectedWorker.terminate()
 		}
 

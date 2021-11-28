@@ -16,11 +16,12 @@ let payload={
 store.dispatch(doSaveMutedUsers(payload))
 
 // */
- class MuteBlockUser{
-    static mutedUsers={}
-    static blockedUsers={}
+
+export class MuteBlockUser{
     
     constructor() {
+        MuteBlockUser.blockedUsers={}
+        MuteBlockUser.mutedUsers={}
         MuteBlockUser.getBlockedUsers()
         MuteBlockUser.getMutedUsers()
     }
@@ -75,19 +76,28 @@ store.dispatch(doSaveMutedUsers(payload))
 
         console.log(filteredMessages)
        return filteredMessages*/
-       return unfilteredMessages.filter( (msg) => {
-                
-        return (MuteBlockUser.blockedUsers[msg.sender]===undefined && MuteBlockUser.mutedUsers[msg.sender]===undefined)
-    }) 
-           /* return unfilteredMessages.filter( (msg) => {
-                
-                return (MuteBlockUser.blockedUsers.indexOf(msg.sender)===-1 && MuteBlockUser.mutedUsers.indexOf(msg.sender)===-1)
-            })    */             
+       console.log(MuteBlockUser.blockedUsers)
+       if(MuteBlockUser.blockedUsers!==undefined)  
+            return unfilteredMessages.filter( (msg) => {       
+                return (MuteBlockUser.blockedUsers!==undefined && MuteBlockUser.blockedUsers[msg.sender]===undefined && MuteBlockUser.blockedUsers[msg.sender]===undefined)
+            })  
+        else 
+            return unfilteredMessages                
+    }
+    static filterMutedUsers(unfilteredMessages){
+        console.log("filter filterMutedUsers")
+        console.log(MuteBlockUser.mutedUsers)
+        if(MuteBlockUser.mutedUsers!==undefined)  
+            return unfilteredMessages.filter( (msg) => {  
+                return ( MuteBlockUser.mutedUsers[msg.sender]===undefined && MuteBlockUser.mutedUsers[msg.sender]===undefined)
+            }) 
+        else 
+            return unfilteredMessages       
     }
     static getMutedUsers(){
         MuteBlockUser.mutedUsers=store.getState().user.mutedUsers
         console.log(MuteBlockUser.mutedUsers)
-        if(MuteBlockUserUser.mutedUsers!==undefined){
+        if(MuteBlockUser.mutedUsers!==undefined){
             MuteBlockUser.mutedUsers=MuteBlockUser.mutedUsers[store.getState().app.selectedAddress.address] ??  {} //if undefined or null then assign empty object 
         }else{
             MuteBlockUser.mutedUsers={}
@@ -98,6 +108,8 @@ store.dispatch(doSaveMutedUsers(payload))
         return MuteBlockUser.mutedUsers
    }
     static getBlockedUsers(){
+        console.log("getting mutedUSers")
+
         MuteBlockUser.blockedUsers=store.getState().user.blockedUsers
         if(MuteBlockUser.blockedUsers!==undefined){
             MuteBlockUser.blockedUsers=MuteBlockUser.blockedUsers[store.getState().app.selectedAddress.address] ??  {} //if undefined or null then assign empty object 
@@ -149,4 +161,4 @@ store.dispatch(doSaveMutedUsers(payload))
    
     }
 }
-export default {MuteBlockUser}
+//export  {MuteBlockUser}

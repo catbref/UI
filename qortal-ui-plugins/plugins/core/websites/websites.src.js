@@ -116,6 +116,9 @@ class Websites extends LitElement {
                         <vaadin-grid-column header="Name" .renderer=${(root, column, data) => {
                             render(html`${this.renderName(data.item)}`, root)
                         }}></vaadin-grid-column>
+                        <vaadin-grid-column header="Status" .renderer=${(root, column, data) => {
+                            render(html`${this.renderStatus(data.item)}`, root)
+                        }}></vaadin-grid-column>
                         <vaadin-grid-column width="10rem" flex-grow="0" header="Action" .renderer=${(root, column, data) => {
                             render(html`${this.renderFollowUnfollowButton(data.item)}`, root)
                         }}></vaadin-grid-column>
@@ -206,6 +209,12 @@ class Websites extends LitElement {
         return html`<a class="visitSite" href="browser/index.html?name=${name}&service=${this.service}">${name}</a>`
     }
 
+    renderStatus(websiteObj) {
+        let status = websiteObj.status
+        
+        return html`${status}`
+    }
+
     renderFollowUnfollowButton(websiteObj) {
         let name = websiteObj.name
 
@@ -258,7 +267,7 @@ class Websites extends LitElement {
             // this.resources = []
 
             let resources = await parentEpml.request('apiCall', {
-                url: `/arbitrary/resources?service=${this.service}&default=true&limit=0&reverse=true`
+                url: `/arbitrary/resources?service=${this.service}&default=true&limit=0&reverse=true&includestatus=true`
             })
 
             this.resources = resources

@@ -1,14 +1,23 @@
 {
   "name": "qortal-ui-crypto",
   "version": "2.1.0",
+  "keywords": [
+    "QORT",
+    "QORTAL",
+    "DECENTRALIZED"
+  ],
+  "homepage": "https://qortal.org",
   "main": "api.js",
-  "repository": "https://github.com/QORT/qortal-ui-crypto.git",
+  "repository": "https://github.com/Qortal/UI.git",
   "author": "QORTAL <admin@qortal.org>",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "dependencies": {
     "asmcrypto.js": "^2.3.2",
-    "buffer": "^5.6.0",
-    "jssha": "^3.1.1",
-    "lodash": "^4.17.19"
+    "buffer": "^6.0.3",
+    "jssha": "^3.2.0",
+    "lodash": "^4.17.21"
+  },
+  "engines": {
+    "node": ">=14.17.0"
   }
 }

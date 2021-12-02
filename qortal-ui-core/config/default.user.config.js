@@ -4,13 +4,6 @@ const user = {
 		// management can be enabled as explicit for public API servers when needed
 	node: 1,
 	knownNodes: [
-		// Localhost Testnet node
-		{
-			protocol: 'http',
-			domain: '127.0.0.1',
-			port: 62391,
-			enableManagement: false,
-		},
 		// Mainnet nodes
 		{
 			protocol: 'http',
@@ -31,6 +24,12 @@ const user = {
 			enableManagement: false,
 		},
 		// Testnet nodes
+		{
+			protocol: 'http',
+			domain: '127.0.0.1',
+			port: 62391,
+			enableManagement: false,
+		},
 		{
 			protocol: 'http',
 			domain: 'node1.qortal.org',

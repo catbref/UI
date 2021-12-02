@@ -4,7 +4,7 @@ import { store } from '../../store.js'
 
 // import { send } from '../../__src.js'
 
-import { createWallet } from 'qortal-ui-crypto'
+import { createWallet } from '../../../../qortal-ui-crypto/api/createWallet.js'
 
 import FileSaver from 'file-saver'
 

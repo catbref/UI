@@ -46,33 +46,18 @@ class WelcomePage extends LitElement {
     render() {
         return html`
             <style>
+              #mobile-logo {}
+              @media only screen and (min-width: ${getComputedStyle(document.body).getPropertyValue('--layout-breakpoint-tablet')}) {
                 #mobile-logo {
-                    
+                  display:hidden;
+                  visibility:none;
                 }
-                 @media only screen and (min-width: ${getComputedStyle(document.body).getPropertyValue('--layout-breakpoint-tablet')}) {
-                    /* Desktop/tablet */
-                    #mobile-logo{
-                        display:hidden;
-                        visibility:none;
-                    }
-                 }
+              }
             </style>
             <div class='welcome-page' style="overflow:hidden;">
-                <div id="mobile-logo">
-
-                </div>
-                <mwc-button
-                    @click=${() => this.navigate('login')}
-                >
-                    Login
-                </mwc-button>
-                <mwc-button
-                    @click=${() => this.navigate('create-account')}
-                    outlined
-                    style="border-top:0; border-bottom:0;"
-                >
-                    Create account
-                </mwc-button>
+              <div id="mobile-logo"></div>
+              <mwc-button @click=${() => this.navigate('login')} outlined style="border-top:0; border-bottom:0;">Login</mwc-button>
+              <mwc-button @click=${() => this.navigate('create-account')} outlined style="border-top:0; border-bottom:0;">Create account</mwc-button>
             </div>
         `
     }

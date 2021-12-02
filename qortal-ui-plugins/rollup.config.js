@@ -1,15 +1,13 @@
 // From original frag-ui build
 
 import babel from '@rollup/plugin-babel'
-
-import resolve from '@rollup/plugin-node-resolve'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
 import builtins from 'rollup-plugin-node-builtins'
 import globals from 'rollup-plugin-node-globals'
-import commonjs from 'rollup-plugin-commonjs'
+import commonjs from '@rollup/plugin-commonjs'
 
 import sass from 'rollup-plugin-sass'
 import autoprefixer from 'autoprefixer'
-// import postcss from 'rollup-plugin-postcss'
 import postcss from 'postcss'
 
 // import minifyHTML from 'rollup-plugin-minify-html-literals'
@@ -56,7 +54,7 @@ const babelOptions = {
 }
 
 const plugins = [
-    resolve({
+    nodeResolve({
         module: true
     }),
     commonjs({}),

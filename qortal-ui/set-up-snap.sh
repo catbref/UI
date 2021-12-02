@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Qortal Blockchain Project - 2020
+# Qortal Blockchain Project - 2021
 
 # Script to install and setup snapstore
 

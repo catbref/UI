@@ -9,7 +9,11 @@
   ],
   "homepage": "https://qortal.org",
   "main": "electron.js",
-  "repository": "https://github.com/Qortal/UI.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Qortal/UI.git",
+    "directory": "qortal-ui"
+  },
   "author": "QORTAL <admin@qortal.org>",
   "license": "GPL-3.0",
   "scripts": {

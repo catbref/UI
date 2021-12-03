@@ -2,7 +2,7 @@ const path = require('path')
 
 const user = {
 		// management can be enabled as explicit for public API servers when needed
-	node: 1,
+	node: 0,
 	knownNodes: [
 		// Mainnet nodes
 		{

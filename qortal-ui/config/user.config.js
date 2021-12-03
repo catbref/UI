@@ -1,6 +1,6 @@
 const user = require('./default.config.js').user
 module.exports = {
-	node: 1, // set to mainnet
+	node: 0, // set to mainnet
 	server: {
 		primary: {
 			port: 12388, // set as default UI port

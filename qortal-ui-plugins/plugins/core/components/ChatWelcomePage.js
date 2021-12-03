@@ -1,9 +1,11 @@
 import { LitElement, html, css } from 'lit-element'
+import { render } from 'lit-html'
 import { Epml } from '../../../epml.js'
 
 import '@material/mwc-icon'
 import '@material/mwc-button'
 import '@material/mwc-dialog'
+import '@polymer/paper-spinner/paper-spinner-lite.js'
 
 const parentEpml = new Epml({ type: 'WINDOW', source: window.parent })
 
@@ -13,6 +15,7 @@ class ChatWelcomePage extends LitElement {
             selectedAddress: { type: Object },
             config: { type: Object },
             myAddress: { type: Object, reflect: true },
+            messages: { type: Array },
             btnDisable: { type: Boolean },
             isLoading: { type: Boolean },
             balance: { type: Number }
@@ -27,12 +30,19 @@ class ChatWelcomePage extends LitElement {
                 transform: translateY(30px);
             }
 
-
             100% {
                 opacity: 1;
                 transform: translate(0);
             }
         }
+
+        paper-spinner-lite{
+            height: 24px;
+            width: 24px;
+            --paper-spinner-color: var(--mdc-theme-primary);
+            --paper-spinner-stroke-width: 2px;
+        }
+
         .welcome-title {
             display: block;
             overflow: hidden;
@@ -106,55 +116,58 @@ class ChatWelcomePage extends LitElement {
             transition: all .4s;
         }
 
-            .red {
-                --mdc-theme-primary: red;
-            }
+        .red {
+            --mdc-theme-primary: red;
+        }
 
-            h2 {
-                margin:0;
-            }
+        h2 {
+             margin:0;
+        }
 
-            h2, h3, h4, h5 {
-                color:#333;
-                font-weight: 400;
-            }
+        h2, h3, h4, h5 {
+            color:#333;
+            font-weight: 400;
+        }
 
-            [hidden] {
-                display: hidden !important;
-                visibility: none !important;
-            }
-            .details {
-                display: flex;
-                font-size: 18px;
-            }
-            .title {
-                font-weight:600;
-                font-size:12px;
-                line-height: 32px;
-                opacity: 0.66;
-            }
-            .input {
-                width: 90%;
-                border: none;
-                display: inline-block;
-                font-size: 16px;
-                padding: 10px 20px;
-                border-radius: 5px;
-                resize: none;
-                background: #eee;
-            }
-            .textarea {
-                width: 90%;
-                border: none;
-                display: inline-block;
-                font-size: 16px;
-                padding: 10px 20px;
-                border-radius: 5px;
-                height: 120px;
-                resize: none;
-                background: #eee;
-            }
-        
+        [hidden] {
+            display: hidden !important;
+            visibility: none !important;
+        }
+
+        .details {
+            display: flex;
+            font-size: 18px;
+        }
+
+        .title {
+            font-weight:600;
+            font-size:12px;
+            line-height: 32px;
+            opacity: 0.66;
+        }
+
+        .input {
+            width: 90%;
+            border: none;
+            display: inline-block;
+            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            resize: none;
+            background: #eee;
+        }
+
+        .textarea {
+            width: 90%;
+            border: none;
+            display: inline-block;
+            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            height: 120px;
+            resize: none;
+            background: #eee;
+        }
         `
     }
 
@@ -163,6 +176,7 @@ class ChatWelcomePage extends LitElement {
         this.selectedAddress = window.parent.reduxStore.getState().app.selectedAddress.address
         this.myAddress = {}
         this.balance = 1
+        this.messages = []
         this.btnDisable = false
         this.isLoading = false
     }
@@ -178,12 +192,12 @@ class ChatWelcomePage extends LitElement {
                     <div class="center-box">
                         <mwc-icon class="img-icon">chat</mwc-icon><br>
                         <span style="font-size: 20px;">${this.myAddress.address}</span>
-                        <div class="start-chat" @click=${() => this.shadowRoot.querySelector('#startChatDialog').show()}> New Private Message </div>
+                        <div class="start-chat" @click=${() => this.shadowRoot.querySelector('#startSecondChatDialog').show()}>New Private Message</div>
                     </div>
                 </div>
                 
                 <!-- Start Chatting Dialog -->
-                <mwc-dialog id="startChatDialog" scrimClickAction="${this.isLoading ? '' : 'close'}">
+                <mwc-dialog id="startSecondChatDialog" scrimClickAction="${this.isLoading ? '' : 'close'}">
                     <div style="text-align:center">
                         <h1>New Private Message</h1>
                         <hr>
@@ -196,13 +210,7 @@ class ChatWelcomePage extends LitElement {
                         <textarea class="textarea" @keydown=${(e) => this._textArea(e)} ?disabled=${this.isLoading} id="messageBox" placeholder="Message..." rows="1"></textarea>
                     </p>
                     
-                    <mwc-button
-                        ?disabled="${this.isLoading}"
-                        slot="primaryAction"
-                        @click=${this._sendMessage}
-                        >
-                        Send
-                    </mwc-button>
+                    <mwc-button ?disabled="${this.isLoading}" slot="primaryAction" @click=${this._sendMessage}>Send</mwc-button>
                     <mwc-button
                         ?disabled="${this.isLoading}"
                         slot="secondaryAction"
@@ -215,6 +223,42 @@ class ChatWelcomePage extends LitElement {
         `
     }
 
+    firstUpdated() {
+        const stopKeyEventPropagation = (e) => {
+            e.stopPropagation();
+            return false;
+        }
+
+        this.shadowRoot.getElementById('sendTo').addEventListener('keydown', stopKeyEventPropagation);
+        this.shadowRoot.getElementById('messageBox').addEventListener('keydown', stopKeyEventPropagation);
+
+        const getDataFromURL = () => {
+            let tempUrl = document.location.href
+            let splitedUrl = decodeURI(tempUrl).split('?')
+            let urlData = splitedUrl[1]
+            if (urlData !== undefined) {
+                this.chatId = urlData
+            }
+        }
+
+        let configLoaded = false
+
+        parentEpml.ready().then(() => {
+            parentEpml.subscribe('selected_address', async selectedAddress => {
+                this.selectedAddress = {}
+                selectedAddress = JSON.parse(selectedAddress)
+                if (!selectedAddress || Object.entries(selectedAddress).length === 0) return
+                this.selectedAddress = selectedAddress
+            })
+            parentEpml.request('apiCall', {
+                url: `/addresses/balance/${window.parent.reduxStore.getState().app.selectedAddress.address}`
+            }).then(res => {
+                this.balance = res
+            })
+        })
+
+        parentEpml.imReady()
+    }
 
     _sendMessage() {
 
@@ -323,10 +367,7 @@ class ChatWelcomePage extends LitElement {
 
             const _chatBytesArray = Object.keys(chatBytes).map(function (key) { return chatBytes[key]; });
             const chatBytesArray = new Uint8Array(_chatBytesArray)
-
-
             const chatBytesHash = new window.parent.Sha256().process(chatBytesArray).finish().result
-
             const hashPtr = window.parent.sbrk(32, window.parent.heap);
             const hashAry = new Uint8Array(window.parent.memory.buffer, hashPtr, 32);
             hashAry.set(chatBytesHash);
@@ -362,33 +403,37 @@ class ChatWelcomePage extends LitElement {
             }
 
         }
-
-        // Exec..
         getAddressPublicKey()
     }
 
-    _textArea(e) {
+   _textMenu(event) {
+        const getSelectedText = () => {
+            var text = "";
+            if (typeof window.getSelection != "undefined") {
+                text = window.getSelection().toString();
+            } else if (typeof this.shadowRoot.selection != "undefined" && this.shadowRoot.selection.type == "Text") {
+                text = this.shadowRoot.selection.createRange().text;
+            }
+            return text;
+        }
 
+        const checkSelectedTextAndShowMenu = () => {
+            let selectedText = getSelectedText();
+            if (selectedText && typeof selectedText === 'string') {
+
+                let _eve = { pageX: event.pageX, pageY: event.pageY, clientX: event.clientX, clientY: event.clientY }
+
+                let textMenuObject = { selectedText: selectedText, eventObject: _eve, isFrame: true }
+
+                parentEpml.request('openCopyTextMenu', textMenuObject)
+            }
+        }
+        checkSelectedTextAndShowMenu()
+    }
+
+    _textArea(e) {
         if (e.keyCode === 13 && !e.shiftKey) this._sendMessage()
     }
-
-
-
-    firstUpdated() {
-        let configLoaded = false
-
-        parentEpml.ready().then(() => {
-            parentEpml.request('apiCall', {
-                url: `/addresses/balance/${window.parent.reduxStore.getState().app.selectedAddress.address}`
-            }).then(res => {
-                this.balance = res
-            })
-        })
-
-
-        parentEpml.imReady()
-    }
-
 }
 
 window.customElements.define('chat-welcome-page', ChatWelcomePage)

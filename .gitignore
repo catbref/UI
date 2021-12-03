@@ -13,3 +13,6 @@ node_modules/
 
 # Build script related
 watch.pid
+
+# Built WWW
+qortal-ui/builtWWW

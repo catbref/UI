@@ -244,10 +244,21 @@ class PublishData extends LitElement {
 				showError(this.errorMessage)
 				throw new Error(this.errorMessage);
 			}
+			
+			const convertedBytes = window.parent.Base58.decode(convertedBytesBase58);
+			const _convertedBytesArray = Object.keys(convertedBytes).map(function (key) { return convertedBytes[key]; });
+            const convertedBytesArray = new Uint8Array(_convertedBytesArray)
+            const convertedBytesHash = new window.parent.Sha256().process(convertedBytesArray).finish().result
 
-			let nonce = 1 // TODO: this is currently ignored
+			const hashPtr = window.parent.sbrk(32, window.parent.heap);
+			const hashAry = new Uint8Array(window.parent.memory.buffer, hashPtr, 32);
+            hashAry.set(convertedBytesHash);
 
-			console.log(this.selectedAddress)
+            const difficulty = 12;
+            const workBufferLength = 8 * 1024 * 1024;
+            const workBufferPtr = window.parent.sbrk(workBufferLength, window.parent.heap);
+
+			let nonce = window.parent.computePow(hashPtr, workBufferPtr, workBufferLength, difficulty)
 
 			let response = await parentEpml.request('sign_arbitrary', {
                 nonce: this.selectedAddress.nonce,

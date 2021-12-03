@@ -25,8 +25,9 @@ const signArbitrary = (arbitraryBytesBase58, arbitraryBytesForSigningBase58, non
     const _arbitraryBytesForSigningBuffer = Object.keys(arbitraryBytesForSigning).map(function (key) { return arbitraryBytesForSigning[key]; });
     const arbitraryBytesForSigningBuffer = new Uint8Array(_arbitraryBytesForSigningBuffer)
 
-    //const _nonce = utils.int32ToBytes(nonce)
-    //arbitraryBytesBuffer.set(_nonce, 112)
+    const _nonce = utils.int32ToBytes(nonce)
+    arbitraryBytesBuffer.set(_nonce, 112)
+    arbitraryBytesForSigningBuffer.set(_nonce, 112)
 
     const signature = nacl.sign.detached(arbitraryBytesForSigningBuffer, keyPair.privateKey)
 

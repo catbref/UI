@@ -70,13 +70,8 @@ class Chat extends LitElement {
                 border-right: 3px #ddd solid;
             }
 
-            .people-list {
+            .people-list .search {
                 padding: 20px;
-            }
-
-            .search {
-                padding-top: 13px;
-                padding-left: 40px;
             }
 
             .people-list .create-chat {
@@ -295,7 +290,6 @@ class Chat extends LitElement {
                 <div class="search">
                     <div class="create-chat" @click=${() => this.shadowRoot.querySelector('#startChatDialog').show()}>New Private Message</div>
                 </div>
-                <hr style="color: #eee; border-radius: 90%; margin-bottom: 2rem;">
                 <ul class="list">
                     ${this.isEmptyArray(this.chatHeads) ? "Loading..." : this.renderChatHead(this.chatHeads)}
                 </ul>

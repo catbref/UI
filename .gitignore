@@ -2,11 +2,8 @@
 yarn.lock
 
 # Derived js files
-qortal-ui-plugins/plugins/**/*.js
+qortal-ui-plugins/plugins/core/**/*.js
 !*.src.js
-!qortal-ui-plugins/plugins/core/components/*.js
-!qortal-ui-plugins/plugins/utils/*.js
-!qortal-ui-crypto/**/*.js
 
 # Node modules
 node_modules/

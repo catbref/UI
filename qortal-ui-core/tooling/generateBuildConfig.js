@@ -1,14 +1,12 @@
 const path = require('path')
-const resolve = require('@rollup/plugin-node-resolve')
+const { nodeResolve } = require('@rollup/plugin-node-resolve')
 const progress = require('rollup-plugin-progress')
 const replace = require('@rollup/plugin-replace')
 const globals = require('rollup-plugin-node-globals')
-const commonjs = require('rollup-plugin-commonjs')
+const commonjs = require('@rollup/plugin-commonjs')
 const alias = require('@rollup/plugin-alias')
 const { terser } = require('rollup-plugin-terser')
-
 const scss = require('rollup-plugin-scss')
-
 const generateES5BuildConfig = require('./generateES5BuildConfig')
 
 
@@ -52,7 +50,7 @@ const generateBuildConfig = ({ elementComponents, functionalComponents, otherOut
                         }
                     })
                 }),
-                resolve({
+                nodeResolve({
                     preferBuiltins: false,
                     mainFields: ['module', 'browser']
                 }),
@@ -73,8 +71,8 @@ const generateBuildConfig = ({ elementComponents, functionalComponents, otherOut
                     }
                 })
             ],
+	    preserveEntrySignatures: false,
             external: ['crypto'],
-
             context: 'window'
         },
         options: {

@@ -313,7 +313,7 @@ class Chat extends LitElement {
                         <hr>
                     </div>
 
-                    <p> Type the name or address of who you want to chat with to send a private message!</p>
+                    <p>Type the name or address of who you want to chat with to send a private message!</p>
                     
                     <textarea class="input" ?disabled=${this.isLoading} id="sendTo" placeholder="Name / Address" rows="1"></textarea>
                     <p style="margin-bottom:0;">

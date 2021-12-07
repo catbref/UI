@@ -111,6 +111,10 @@ const generateForPlugins = () => {
       in: "plugins/core/messaging/q-chat/q-chat.src.js",
       out: "plugins/core/messaging/q-chat/q-chat.js",
     },
+    {
+      in: "plugins/core/minting/minting-info.src.js",
+      out: "plugins/core/minting/minting-info.js",
+    },
   ].map((file) => {
     return generateRollupConfig(
       path.join(__dirname, file.in),

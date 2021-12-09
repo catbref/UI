@@ -204,7 +204,7 @@ class MintingInfo extends LitElement {
                 <div class="sub-main">
                     <div class="center-box">
                         <div>
-                            <span class="level-black">Blockchain Statistc</span>
+                            <span class="level-black">Blockchain Statistics</span>
                             <hr style="width: 50%; color: #eee; border-radius: 80%; margin-bottom: 2rem;">
                         </div><br>
                         <div class="content-box">

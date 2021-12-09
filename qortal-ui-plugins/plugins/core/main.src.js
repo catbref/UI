@@ -12,6 +12,15 @@ parentEpml.ready().then(() => {
     // pluginUrlsConf
     let pluginUrlsConf = [
         {
+            url: 'minting',
+            domain: 'core',
+            page: 'minting/index.html',
+            title: 'Minting Details',
+            icon: 'info',
+            menus: [],
+            parent: false
+        },
+        {
             url: 'wallet',
             domain: 'core',
             page: 'wallet/index.html',

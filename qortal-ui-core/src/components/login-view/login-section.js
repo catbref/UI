@@ -19,7 +19,7 @@ import '@polymer/paper-spinner/paper-spinner-lite.js'
 import { doLogin, doSelectAddress } from '../../redux/app/app-actions.js'
 import { doStoreWallet, doRemoveWallet } from '../../redux/user/user-actions.js'
 
-import { createWallet } from 'qortal-ui-crypto'
+import { createWallet } from '../../../../qortal-ui-crypto/api/createWallet.js'
 
 import snackbar from '../../functional-components/snackbar.js'
 import '../../custom-elements/frag-file-input.js'
@@ -82,7 +82,7 @@ class LoginSection extends connect(store)(LitElement) {
             },
             {
                 page: 'seed',
-                linkText: 'Qora address seed',
+                linkText: 'Qortal address seed',
                 icon: 'clear_all'
             },
             {
@@ -280,7 +280,7 @@ class LoginSection extends connect(store)(LitElement) {
                         <div page="seed" id="seedPage">
                             <div>
                                 <div style="display:flex;">
-                                    <mwc-textfield style="width:100%;" icon="clear_all" label="Qora address seed" id="v1SeedInput" type="password"></mwc-textfield>
+                                    <mwc-textfield style="width:100%;" icon="clear_all" label="Qortal address seed" id="v1SeedInput" type="password"></mwc-textfield>
                                 </div>
                             </div>
                         </div>

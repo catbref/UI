@@ -6,11 +6,8 @@ import { stateAwait } from '../../stateAwait.js'
 import '@material/mwc-button'
 import '@material/mwc-icon'
 import '@material/mwc-fab'
-
 import '@polymer/iron-pages'
 import '@polymer/paper-icon-button/paper-icon-button.js'
-
-
 import './welcome-page.js'
 import './create-account-section.js'
 import './login-section.js'
@@ -133,9 +130,9 @@ class LoginView extends connect(store)(LitElement) {
                 }
 
                 .qortal-logo {
-                    padding:40px 30px;
-                    position: absolute;
-                    width:120px;
+		    margin-left: auto;
+		    margin-right: auto;
+                    width:200px;
                     max-width:40%;
                     z-index:1;
                 }
@@ -258,9 +255,9 @@ class LoginView extends connect(store)(LitElement) {
             <div class="login-page" ?hidden=${this.loggedIn}>
                 <mwc-fab icon="settings" style="position:fixed; right:24px; bottom:24px;" @click=${() => settings.show()}></mwc-fab>
                 <div class="login-card-container">
-                    <img class="qortal-logo" src="${this.config.coin.logo}">
                     <div class="login-card-center-container">
                         <div class="login-card" id="login-card">
+                        <img class="qortal-logo" src="${this.config.coin.logo}">
                             <iron-pages selected="${this.selectedPage}" attr-for-selected="page" id="loginContainerPages">
                                 <welcome-page @next=${e => this.selectedPageElement.next(e)} page="welcome"></welcome-page>
                                 <create-account-section @next=${e => this.selectedPageElement.next(e)} page="create-account"></create-account-section>

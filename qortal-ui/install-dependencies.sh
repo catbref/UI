@@ -1,20 +1,19 @@
 #!/bin/sh
 
-# Qortal Blockchain Project - 2020
+# Qortal Blockchain Project - 2021
 
 # Travis Script to install dependencies...
 
 set -ev
 
 # install every repository needed, install dependencies, clone git repos, do yarn linking and building, and build and run final UI
+
 install_dependencies()
 {
   echo -e '---INSTALLING DEPENDENCIES!---'
-  echo -e 'GIT'
-  echo -e '---CLONING AND INSTALLING ALL UI REPOSITORIES---'
+  echo -e '---INSTALLING ALL UI REPOSITORIES---'
 
   cd ../
-  git clone https://github.com/Qortal/qortal-ui-core.git
   cd qortal-ui-core
   yarn install --pure-lockfile
   cd ../
@@ -23,7 +22,7 @@ install_dependencies()
   cd qortal-ui/qortal-ui-core
   yarn link
   cd ../../
-  git clone https://github.com/Qortal/qortal-ui-plugins.git
+
   cd qortal-ui-plugins
   yarn install --pure-lockfile
   cd ../
@@ -32,7 +31,7 @@ install_dependencies()
   cd qortal-ui/qortal-ui-plugins
   yarn link
   cd ../../
-  git clone https://github.com/Qortal/qortal-ui-crypto.git
+
   cd qortal-ui-crypto
   yarn install --pure-lockfile
   cd ../
@@ -47,19 +46,18 @@ install_dependencies()
 
   echo -e '---LINKING UI FOLDERS ---'
   yarn link qortal-ui-core
-  yarn link qortal-ui-plugins
   yarn link qortal-ui-crypto
+  yarn link qortal-ui-plugins
 
   echo -e '---BUILDING UI DEPENDENCIES!---'
-  yarn run build
+  yarn build
 
   echo -e '---UPDATE PACKAGE-JSON UI DEPENDENCIES!---'
-  yarn run update-package-json
+  yarn update-package-json
 
   echo -e '---REMOVE MODULES AND UNUSED DEPENDENCIES!---'
   cd qortal-ui-core
   yarn install --production --ignore-scripts --prefer-offline
-  # yarn remove @material/layout-grid @material/mwc-button @material/mwc-checkbox @material/mwc-dialog @material/mwc-drawer @material/mwc-fab @material/mwc-formfield @material/mwc-icon @material/mwc-icon-button @material/mwc-list @material/mwc-select @material/mwc-snackbar @material/mwc-textfield @material/mwc-top-app-bar
   cd ../
   cd qortal-ui-plugins
   rm -R node_modules

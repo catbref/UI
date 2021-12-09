@@ -1,7 +1,7 @@
 const babel = require('@rollup/plugin-babel');
-const resolve = require('@rollup/plugin-node-resolve');
+const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const replace = require('@rollup/plugin-replace');
-const commonjs = require('rollup-plugin-commonjs');
+const commonjs = require('@rollup/plugin-commonjs');
 const progress = require('rollup-plugin-progress');
 const { terser } = require("rollup-plugin-terser");
 const path = require('path');
@@ -18,7 +18,7 @@ const generateRollupConfig = (file, { outputDir, aliases }) => {
                 }
             },
             plugins: [
-                resolve({
+                nodeResolve({
                     preferBuiltins: false,
                     mainFields: ['module', 'browser']
                 }),
@@ -47,6 +47,7 @@ const generateRollupConfig = (file, { outputDir, aliases }) => {
                     },
                 })
             ],
+	    preserveEntrySignatures: false,
             external: ['crypto']
         },
         outputOptions: {

@@ -20,7 +20,7 @@ const INITIAL_STATE = {
         ]
     },
     nodeConfig: {
-        node: 1,
+        node: 0,
         knownNodes: [{}],
         version: ''
     },

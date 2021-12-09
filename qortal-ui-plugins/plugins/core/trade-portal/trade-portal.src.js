@@ -525,7 +525,7 @@ class TradePortal extends LitElement {
 								<mwc-tab id="tab-buy" label="Buy" @click=${(e) => this.displayTabContent('buy')}></mwc-tab>
 								<mwc-tab id="tab-sell" label="Sell" @click=${(e) => this.displayTabContent('sell')}></mwc-tab>
 							</mwc-tab-bar>
-							<div id="tabs-1-content">
+							<z id="tabs-1-content">
 								<div id="tab-buy-content">
 								<div class="card">
 									<div style="margin-left: auto">

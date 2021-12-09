@@ -102,28 +102,28 @@ class NodeManagement extends LitElement {
     `;
   }
 
-    constructor() {
-        super();
-        this.upTime = "";
-        this.mintingAccounts = [];
-        this.peers = [];
-        this.addPeerLoading = false;
-        this.confPeerLoading = false;
-        this.addMintingAccountLoading = false;
-        this.removeMintingAccountLoading = false;
-        this.addMintingAccountKey = "";
-        this.addPeerMessage = "";
-        this.confPeerMessage = "";
-        this.addMintingAccountMessage = "";
-        this.tempMintingAccount = {};
-        this.config = {
-            user: {
-                node: {},
-            },
-        };
-        this.nodeConfig = {};
-        this.nodeDomain = "";
-    }
+  constructor() {
+      super();
+      this.upTime = "";
+      this.mintingAccounts = [];
+      this.peers = [];
+      this.addPeerLoading = false;
+      this.confPeerLoading = false;
+      this.addMintingAccountLoading = false;
+      this.removeMintingAccountLoading = false;
+      this.addMintingAccountKey = "";
+      this.addPeerMessage = "";
+      this.confPeerMessage = "";
+      this.addMintingAccountMessage = "";
+      this.tempMintingAccount = {};
+      this.config = {
+          user: {
+              node: {},
+          },
+      };
+      this.nodeConfig = {};
+      this.nodeDomain = "";
+  }
 
   render() {
     return html`
@@ -131,7 +131,7 @@ class NodeManagement extends LitElement {
         <div class="node-card">
           <h2>Node management for: ${this.nodeDomain}</h2>
           <span><br />Node has been online for: ${this.upTime}</span>
-
+          
           <br /><br />
           <div id="minting">
             <div style="min-height:48px; display: flex; padding-bottom: 6px;">
@@ -143,9 +143,9 @@ class NodeManagement extends LitElement {
               <mwc-button
                 style="float:right;"
                 @click=${() =>
-        this.shadowRoot
-          .querySelector("#addMintingAccountDialog")
-          .show()}
+                  this.shadowRoot
+                    .querySelector("#addMintingAccountDialog")
+                    .show()}
                 ><mwc-icon>add</mwc-icon>Add minting account</mwc-button
               >
             </div>
@@ -215,7 +215,10 @@ class NodeManagement extends LitElement {
           <br />
           <div id="peers">
             <div style="min-height: 48px; display: flex; padding-bottom: 6px;">
-              <h3 style="margin: 0; flex: 1; padding-top: 8px; display: inline;">Peers connected to node</h3>
+              <h3 style="margin: 0; flex: 1; padding-top: 8px; display: inline;">
+                <span>Peers connected to node</span>
+                <span>(${this.peers.length})</span>
+              </h3>
               <mwc-button @click=${() => this.shadowRoot.querySelector("#addPeerDialog").show()}><mwc-icon>add</mwc-icon>Add peer</mwc-button>
             </div>
 
@@ -255,8 +258,8 @@ class NodeManagement extends LitElement {
                 <vaadin-grid-column path="lastHeight"></vaadin-grid-column>
                 <vaadin-grid-column path="version" header="Build Version"></vaadin-grid-column>
                 <vaadin-grid-column path="age" header="Connected for"></vaadin-grid-column>
-				<vaadin-grid-column  width="12em" header="Action" .renderer=${(root, column, data) => {
-                    render(html`<mwc-button class="red" @click=${() => this.removePeer(data.item.address, data.index)}><mwc-icon>delete</mwc-icon>Remove Peer</mwc-button>`, root)
+				        <vaadin-grid-column  width="12em" header="Action" .renderer=${(root, column, data) => {
+                    render(html`<mwc-button class="red" @click=${() => this.removePeer(data.item.address, data.index)}><mwc-icon>delete</mwc-icon>Remove Peer</mwc-button><mwc-button class="green" @click=${() => this.forceSyncPeer(data.item.address, data.index)}>Force Sync to Peer</mwc-button>`, root)
                 }}></vaadin-grid-column>
             </vaadin-grid>
 
@@ -267,7 +270,19 @@ class NodeManagement extends LitElement {
       </div>
     `;
   }
-
+	
+  forceSyncPeer (peerAddress, rowIndex) {
+    parentEpml
+      .request("apiCall", {
+        url: `/admin/forcesync`,
+        method: "POST",
+        body: peerAddress,
+      })
+      .then((res) => {
+        parentEpml.request('showSnackBar', "Starting Sync with Peer: " + peerAddress );
+      });
+  }
+	
   removePeer(peerAddress, rowIndex) {
     parentEpml
       .request("apiCall", {
@@ -279,12 +294,6 @@ class NodeManagement extends LitElement {
         parentEpml.request('showSnackBar', "Successfully removed Peer: " + peerAddress );
         this.peers.splice(rowIndex, 1);
       });
-  }
-
-  removePeerBtnRender(root, column, rowData) {
-    render(html`
-      <mwc-button class="red" @click=${this.removePeer}" slot="primaryAction"> Remove Peer </mwc-button>
-      `,root);
   }
 	
   onPageNavigation(pageUrl) {

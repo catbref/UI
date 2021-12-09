@@ -102,6 +102,36 @@ class SendMoneyPage extends LitElement {
 				font-size: 22px;
 				font-weight: 100;
 			}
+			
+			.coinName::before  {
+				content: "";
+				display: inline-block;
+				height: 25px;
+				width: 25px;
+				position: absolute;
+				background-repeat: no-repeat;
+				background-size: cover;
+				left: 10px;
+				top: 10px;
+			}
+			.qort.coinName:before  {
+				background-image: url('/img/qort.png');
+			}
+			.btc.coinName:before  {
+				background-image: url('/img/btc.png');
+			}
+			.ltc.coinName:before  {
+				background-image: url('/img/ltc.png');
+			}
+			.doge.coinName:before  {
+				background-image: url('/img/doge.png');
+			}
+			.coinName {
+				display: inline-block;
+				height: 25px;
+				padding-left: 25px;
+			}
+			
 			paper-progress {
 				--paper-progress-active-color: var(--mdc-theme-primary);
 			}
@@ -124,10 +154,10 @@ class SendMoneyPage extends LitElement {
 					</paper-card>
 					<p>
 						<mwc-select id="coinType" label="Select Coin" index="0" @selected=${(e) => this.selectCoin(e)} style="min-width: 130px; max-width:100%; width:100%;">
-							<mwc-list-item value="qort">QORT</mwc-list-item>
-							<mwc-list-item value="btc">BTC</mwc-list-item>
-							<mwc-list-item value="ltc">LTC</mwc-list-item>
-							<mwc-list-item value="doge">DOGE</mwc-list-item>
+							<mwc-list-item value="qort"></span> <span class="coinName qort">QORT</span></mwc-list-item>
+							<mwc-list-item value="btc"> <span class="coinName btc">BTC</span></mwc-list-item>
+							<mwc-list-item value="ltc"> <span class="coinName ltc">LTC</span></mwc-list-item>
+							<mwc-list-item value="doge"> <span class="coinName doge">DOGE</span></mwc-list-item>
 						</mwc-select>
 					</p>
 					<p>

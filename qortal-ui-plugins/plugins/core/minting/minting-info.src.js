@@ -418,13 +418,13 @@ class MintingInfo extends LitElement {
     }
 
     _levelUpDays() {
-        let countDays = ((this._blocksNeed() - this.addressInfo.blocksMinted) / this._timeCalc()).toFixed(2);
+        let countDays = ((this._blocksNeed() - (this.addressInfo.blocksMinted + this.addressInfo.blocksMintedAdjustment)) / this._timeCalc()).toFixed(2);
         let countString = (countDays).toString();
         return "" + countString;
     }
 
     _levelUpBlocks() {
-        let countBlocksString = (this._blocksNeed() - this.addressInfo.blocksMinted).toString();
+        let countBlocksString = (this._blocksNeed() - (this.addressInfo.blocksMinted + this.addressInfo.blocksMintedAdjustment)).toString();
         return "" + countBlocksString;
     }
 

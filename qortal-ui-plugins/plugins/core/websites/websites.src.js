@@ -144,7 +144,7 @@ class Websites extends LitElement {
         let namesJsonString = JSON.stringify({"items": items})
 
         let ret = await parentEpml.request('apiCall', {
-            url: '/lists/followed/names',
+            url: '/lists/followedNames',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -174,7 +174,7 @@ class Websites extends LitElement {
         let namesJsonString = JSON.stringify({"items": items})
 
         let ret = await parentEpml.request('apiCall', {
-            url: '/lists/followed/names',
+            url: '/lists/followedNames',
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
@@ -278,7 +278,7 @@ class Websites extends LitElement {
             // this.followedNames = []
 
             let followedNames = await parentEpml.request('apiCall', {
-                url: `/lists/followed/names`
+                url: `/lists/followedNames`
             })
 
             this.followedNames = followedNames

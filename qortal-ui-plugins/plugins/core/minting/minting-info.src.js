@@ -195,6 +195,57 @@ class MintingInfo extends LitElement {
     }
 
     render() {
+	if (this.renderMintingPage() === "false") {
+        return html`
+            <div>
+                <div>
+                    <span class="header-title">General Minting Details</span>
+                    <hr style="color: #eee; border-radius: 80%; margin-bottom: 2rem;">
+                </div>
+                <div class="sub-main">
+                    <div class="center-box">
+                        <div>
+                            <span class="level-black">Blockchain Statistics</span>
+                            <hr style="width: 50%; color: #eee; border-radius: 80%; margin-bottom: 2rem;">
+                        </div><br>
+                        <div class="content-box">
+                            <span class="title">Avg. Qortal Blocktime</span>
+                            <hr style="color: #eee; border-radius: 90%; margin-bottom: 1rem;">
+                            <h4>${this._averageBlockTime()} Seconds</h4>
+                        </div>
+                        <div class="content-box">
+                            <span class="title">Avg. Blocks Per Day</span>
+                            <hr style="color: #eee; border-radius: 90%; margin-bottom: 1rem;">
+                            <h4>${this._timeCalc()} Blocks</h4>
+                        </div>
+                        <div class="content-box">
+                            <span class="title">Avg. Created QORT Per Day</span>
+                            <hr style="color: #eee; border-radius: 90%; margin-bottom: 1rem;">
+                            <h4>${this._dayReward()} QORT</h4>
+                        </div><br><br><br>
+                        <div>
+                            <span class="level-black">${this.renderActivateHelp()}</span>
+                            <hr style="width: 50%;color: #eee; border-radius: 80%; margin-bottom: 2rem;">
+                        </div><br>
+                    </div>
+                </div>
+
+                <!-- Activate Account Dialog -->
+                <mwc-dialog id="activateAccountDialog">
+                    <div style="text-align:center">
+                        <h2>Activate Your Account</h2>
+                        <hr>
+                    </div>
+                    <div>
+                        <h3>Introduction</h3><br />
+                            To activate your account you must have an transaction in your account.
+                            You can ask within Q-Chat or wherever else and someone will happily send you some small QORT.
+                            After somebody send you some QORT, logout and after login again. Your account is activated.
+                    </div>
+                   <mwc-button slot="primaryAction" dialogAction="cancel" class="red-button">Close</mwc-button>
+                </mwc-dialog>
+            </div>
+        `} else {
         return html`
             <div>
                 <div>
@@ -299,7 +350,7 @@ class MintingInfo extends LitElement {
                 </mwc-dialog>
 
             </div>
-        `
+        `}
     }
 
     firstUpdated() {
@@ -370,6 +421,21 @@ class MintingInfo extends LitElement {
         parentEpml.imReady();
     }
 
+    renderMintingPage() {
+        if (this.addressInfo.error === 124) {
+            return "false"
+        } else {
+            return "true"
+        }
+    }
+
+    renderActivateHelp() {
+        if (this.renderMintingPage() === "false") {
+            return html `Activate Account Details <div class="level-blue">==></div> Not Activated<br><mwc-button class="red-button" @click=${() => this.shadowRoot.querySelector("#activateAccountDialog").show()}><mwc-icon class="help-icon">help_outline</mwc-icon>&nbsp;Press For Help</mwc-button>`;
+        } else {
+            return "No Details";
+        }
+    }
     _averageBlockTime() {
         let avgBlockString = (this.adminInfo.currentTimestamp - this.sampleBlock.timestamp).toString();
 	let averageTimeString = ((avgBlockString / 1000) / 10000).toFixed(2);

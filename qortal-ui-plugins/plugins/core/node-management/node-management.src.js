@@ -259,7 +259,7 @@ class NodeManagement extends LitElement {
                 <vaadin-grid-column path="version" header="Build Version"></vaadin-grid-column>
                 <vaadin-grid-column path="age" header="Connected for"></vaadin-grid-column>
 				        <vaadin-grid-column  width="12em" header="Action" .renderer=${(root, column, data) => {
-                    render(html`<mwc-button class="red" @click=${() => this.removePeer(data.item.address, data.index)}><mwc-icon>delete</mwc-icon>Remove Peer</mwc-button><mwc-button class="green" @click=${() => this.forceSyncPeer(data.item.address, data.index)}>Force Sync to Peer</mwc-button>`, root)
+                    render(html`<mwc-button class="red" @click=${() => this.removePeer(data.item.address, data.index)}><mwc-icon>delete</mwc-icon>Remove</mwc-button><mwc-button class="green" @click=${() => this.forceSyncPeer(data.item.address, data.index)}>Force Sync</mwc-button>`, root)
                 }}></vaadin-grid-column>
             </vaadin-grid>
 

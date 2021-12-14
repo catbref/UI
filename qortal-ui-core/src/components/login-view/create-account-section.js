@@ -401,10 +401,7 @@ class CreateAccountSection extends connect(store)(LitElement) {
                             <h3>Download Wallet BackUp File</h3>
                             <p style="text-align: justify;">Your account is now created${this.saveAccount ? ' and will be saved in this browser.' : '.'}</p>
                             <p style="margin:0;">
-                                This file is the <strong>ONLY</strong> way to access your account on a system that doesn't have it saved to the app/browser, 
-                                <strong>BE SURE TO BACKUP THIS FILE IN MULTPLE PLACES.</strong> The file is encrypted very securely and decrypted with your local password you created in previous step. 
-                                So you can save it anywhere securely. 
-                                But be sure to do that, in multiple locations.
+                                This file is the <strong>ONLY</strong> way to access your account on a system that doesn't have it saved to the app/browser. <strong>BE SURE TO BACKUP THIS FILE IN MULTIPLE PLACES.</strong> The file is encrypted very securely and decrypted with your local password you created in the previous step. You can save it anywhere securely, but be sure to do that in multiple locations.
                             </p>
                             <div id="download-area">
                                 <div style="line-height:40px;">

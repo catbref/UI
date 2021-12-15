@@ -677,7 +677,7 @@ class MintingInfo extends LitElement {
         } else if (this.addressInfo.level === 6) {
             let countReward60 = ((this._blockReward() / 100 * this._tierPercent()) / (this.addressLevel[4].count + this.addressLevel[5].count)).toFixed(8);
             let countReward61 = (countReward60).toString();
-            return "" + countReward51;
+            return "" + countReward61;
         } else if (this.addressInfo.level === 10) {
             let countReward100 = ((this._blockReward() / 100 * this._tierPercent()) / this.addressLevel[6].count).toFixed(8);
             let countReward101 = (countReward100).toString();

@@ -358,14 +358,14 @@ class MintingInfo extends LitElement {
             parentEpml.request("apiCall", {url: `/admin/info`}).then((res) => {
                 setTimeout(() => {this.adminInfo = res;}, 1);
             });
-            setTimeout(getAdminInfo, 5000);
+            setTimeout(getAdminInfo, 30000);
         };
 
         const getNodeInfo = () => {
             parentEpml.request("apiCall", {url: `/admin/status`}).then((res) => {
                 setTimeout(() => {this.nodeInfo = res;}, 1);
             });
-            setTimeout(getNodeInfo, 5000);
+            setTimeout(getNodeInfo, 30000);
         };
 
         const getSampleBlock = () => {
@@ -373,21 +373,21 @@ class MintingInfo extends LitElement {
             parentEpml.request("apiCall", {url: `/blocks/byheight/${callBlock}`}).then((res) => {
                 setTimeout(() => {this.sampleBlock = res;}, 1);
             });
-            setTimeout(getSampleBlock, 5000);
+            setTimeout(getSampleBlock, 30000);
         };
 
         const getAddressInfo = () => {
             parentEpml.request('apiCall', {url: `/addresses/${window.parent.reduxStore.getState().app.selectedAddress.address}`}).then((res) => {
                 setTimeout(() => {this.addressInfo = res;}, 1);
             });
-            setTimeout(getAddressInfo, 5000);
+            setTimeout(getAddressInfo, 30000);
         };
 
         const getAddressLevel = () => {
             parentEpml.request('apiCall', {url: `/addresses/online/levels`}).then((res) => {
                 setTimeout(() => {this.addressLevel = res;}, 1);
             });
-            setTimeout(getAddressLevel, 5000);
+            setTimeout(getAddressLevel, 30000);
         };
 
         let configLoaded = false;

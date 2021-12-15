@@ -363,7 +363,9 @@ class MintingInfo extends LitElement {
 
         const getNodeInfo = () => {
             parentEpml.request("apiCall", {url: `/admin/status`}).then((res) => {
-                setTimeout(() => {this.nodeInfo = res;}, 1);
+                this.nodeInfo = res;
+                // Now look up the sample block
+                getSampleBlock()
             });
             setTimeout(getNodeInfo, 30000);
         };
@@ -373,7 +375,6 @@ class MintingInfo extends LitElement {
             parentEpml.request("apiCall", {url: `/blocks/byheight/${callBlock}`}).then((res) => {
                 setTimeout(() => {this.sampleBlock = res;}, 1);
             });
-            setTimeout(getSampleBlock, 30000);
         };
 
         const getAddressInfo = () => {
@@ -406,7 +407,6 @@ class MintingInfo extends LitElement {
                 if (!configLoaded) {
                     setTimeout(getAdminInfo, 1);
                     setTimeout(getNodeInfo, 1);
-                    setTimeout(getSampleBlock, 1);
                     setTimeout(getAddressInfo, 1);
                     setTimeout(getAddressLevel, 1);
                     configLoaded = true;

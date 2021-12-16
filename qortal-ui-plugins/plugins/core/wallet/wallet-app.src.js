@@ -904,7 +904,9 @@ class MultiWallet extends LitElement {
 		event.preventDefault()
 	
 		const target = event.currentTarget
-		if (target.classList.contains('active')) return
+
+		// if (target.classList.contains('active')) return
+		// removed to allow one click wallet refresh
 
 		this.currencyBoxes.forEach((currencyBox) => {
 			if (currencyBox.classList.contains('active')) {

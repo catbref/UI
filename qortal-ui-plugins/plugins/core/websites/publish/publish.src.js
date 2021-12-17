@@ -243,7 +243,7 @@ class PublishData extends LitElement {
 				postBody = Buffer.from(fileBuffer).toString('base64');
 			}
 
-			let uploadDataUrl = `/arbitrary/${this.service}/${registeredName}`
+			let uploadDataUrl = `/arbitrary/${this.service}/${registeredName}${urlSuffix}`
 			if (identifier != null && identifier.trim().length > 0) {
 				uploadDataUrl = `/arbitrary/${service}/${registeredName}/${this.identifier}${urlSuffix}`
 			}

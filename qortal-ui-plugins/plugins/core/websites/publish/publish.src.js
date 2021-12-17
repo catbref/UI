@@ -65,6 +65,11 @@ class PublishData extends LitElement {
 			paper-progress {
 				--paper-progress-active-color: var(--mdc-theme-primary);
 			}
+
+			.upload-text {
+				display: block;
+				font-size: 14px;
+			}
 		`
 	}
 
@@ -83,11 +88,7 @@ class PublishData extends LitElement {
 							<mwc-list-item value="${this.registeredName}">${this.registeredName}</mwc-list-item>
 						</mwc-select>
 					</p>
-					<p>
-						${this.uploadType === "file" ?
-							html`<input style="width:100%;" id="file" type="file" />` : 
-							html`<mwc-textfield style="width:100%;" label="Local path to static files" id="path" type="text" value="${this.path}"></mwc-textfield>`}
-					</p>
+					${this.renderUploadField()}
 					<p style="display: ${this.showService ? 'block' : 'none'}">
 						<mwc-textfield style="width:100%;" label="Service" id="service" type="text" value="${this.service}"></mwc-textfield>
 					</p>
@@ -111,6 +112,25 @@ class PublishData extends LitElement {
 		`
 	}
 
+	renderUploadField() {
+		if (this.uploadType === "file") {
+			return html`<p>
+				<input style="width:100%;" id="file" type="file" />
+			</p>`;
+		}
+		else if (this.uploadType === "zip") {
+			return html`<p>
+				<span class="upload-text">Select zip file containing static content:</span><br />
+				<input style="width:100%;" id="file" type="file" accept=".zip" />
+			</p>`;
+		}
+		else {
+			return html`<p>
+				<mwc-textfield style="width:100%;" label="Local path to static files" id="path" type="text" value="${this.path}"></mwc-textfield>
+			</p>`;
+		}
+	}
+
 
 	doPublish(e) {
 		let registeredName = this.shadowRoot.getElementById('registeredName').value
@@ -125,7 +145,7 @@ class PublishData extends LitElement {
 		let file;
 		let path;
 
-		if (this.uploadType === "file") {
+		if (this.uploadType === "file" || this.uploadType === "zip") {
 			file = this.shadowRoot.getElementById('file').files[0]
 		}
 		else if (this.uploadType === "path") {
@@ -141,6 +161,9 @@ class PublishData extends LitElement {
 	    }
 		else if (this.uploadType === "file" && file == null) {
 			parentEpml.request('showSnackBar', 'Please select a file to host')
+	    }
+		else if (this.uploadType === "zip" && file == null) {
+			parentEpml.request('showSnackBar', 'Please select a zip file to host')
 	    }
 		else if (this.uploadType === "path" && path === '') {
 			parentEpml.request('showSnackBar', 'Please enter the directory path containing the static content')
@@ -204,11 +227,20 @@ class PublishData extends LitElement {
 		const uploadData = async (registeredName, path, file) => {
 			let postBody = path
 			let urlSuffix = ""
-			// If we're sending file data, use the /base64 version of the POST /arbitrary/* API
 			if (file != null) {
+
+				// If we're sending zipped data, make sure to use the /zip version of the POST /arbitrary/* API
+				if (this.uploadType === "zip") {
+					urlSuffix = "/zip"
+				}
+				// If we're sending file data, use the /base64 version of the POST /arbitrary/* API
+				else if (this.uploadType === "file") {
+					urlSuffix = "/base64"
+				}
+
+				// Base64 encode the file to work around compatibility issues between javascript and java byte arrays
 				let fileBuffer = new Uint8Array(await file.arrayBuffer())
 				postBody = Buffer.from(fileBuffer).toString('base64');
-				urlSuffix = "/base64"
 			}
 
 			let uploadDataUrl = `/arbitrary/${this.service}/${registeredName}`

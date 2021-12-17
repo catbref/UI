@@ -30,6 +30,8 @@ class PublishData extends LitElement {
 			//selectedAddress: { type: Object },
 
 			amount: { type: Number },
+			generalMessage: { type: String },
+			successMessage: { type: String },
 			errorMessage: { type: String },
 			loading: { type: Boolean },
 			btnDisable: { type: Boolean },
@@ -96,7 +98,7 @@ class PublishData extends LitElement {
 						<mwc-textfield style="width:100%;" label="Identifier" id="identifier" type="text" value="${this.identifier != null ? this.identifier : ''}"></mwc-textfield>
 					</p>
 					
-
+					<p style="break-word;">${this.generalMessage}</p>
 					<p style="color:red">${this.errorMessage}</p>
 					<p style="color:green;word-break: break-word;">${this.successMessage}</p>
 
@@ -152,6 +154,7 @@ class PublishData extends LitElement {
 			path = this.shadowRoot.getElementById('path').value
 		}
 
+		this.generalMessage = ''
 		this.successMessage = ''
 		this.errorMessage = ''
 
@@ -192,6 +195,7 @@ class PublishData extends LitElement {
 		const showError = async (errorMessage) => {
 			this.loading = false
 			this.btnDisable = false
+			this.generalMessage = ''
 			this.successMessage = ''
 			console.error(errorMessage)
 		}
@@ -211,6 +215,8 @@ class PublishData extends LitElement {
 				throw new Error(this.errorMessage);
 			}
 
+			this.generalMessage = "Performing proof of work... this can take some time...";
+
 			let signAndProcessRes = await signAndProcess(transactionBytes)
 			if (signAndProcessRes.error) {
 				this.errorMessage = "Error: " + signAndProcessRes.message
@@ -221,6 +227,7 @@ class PublishData extends LitElement {
 			this.btnDisable = false
 			this.loading = false
 			this.errorMessage = ''
+			this.generalMessage = ''
 			this.successMessage = 'Transaction successful!'
 		}
 
@@ -290,6 +297,8 @@ class PublishData extends LitElement {
             const workBufferLength = 8 * 1024 * 1024;
             const workBufferPtr = window.parent.sbrk(workBufferLength, window.parent.heap);
 
+			this.errorMessage = '';
+			this.successMessage = '';
 			let nonce = window.parent.computePow(hashPtr, workBufferPtr, workBufferLength, difficulty)
 
 			let response = await parentEpml.request('sign_arbitrary', {
@@ -380,6 +389,8 @@ class PublishData extends LitElement {
 		this.selectedName = 'invalid'
 		this.path = ''
 		//this.selectedAddress = {}
+		this.successMessage = ''
+		this.generalMessage = ''
 		this.errorMessage = ''
 		this.loading = false
 		this.btnDisable = false

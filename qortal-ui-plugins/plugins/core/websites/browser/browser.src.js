@@ -84,7 +84,7 @@ class WebBrowser extends LitElement {
 						<!-- TODO: address bar goes here -->
 					</div>
 					<div class="iframe-container">
-						<iframe id="browser-iframe" src="${this.url}">
+						<iframe id="browser-iframe" src="${this.url}" sandbox="allow-scripts allow-forms">
 							Your browser doesn't support iframes
 						</iframe>
 					</div>

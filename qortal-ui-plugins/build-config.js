@@ -100,16 +100,16 @@ const generateForPlugins = () => {
       out: "plugins/core/name-registration/name-registration.js",
     },
     {
-      in: "plugins/core/websites/websites.src.js",
-      out: "plugins/core/websites/websites.js",
+      in: "plugins/core/qdn/websites.src.js",
+      out: "plugins/core/qdn/websites.js",
     },
     {
-      in: "plugins/core/websites/publish/publish.src.js",
-      out: "plugins/core/websites/publish/publish.js",
+      in: "plugins/core/qdn/publish/publish.src.js",
+      out: "plugins/core/qdn/publish/publish.js",
     },
     {
-      in: "plugins/core/websites/browser/browser.src.js",
-      out: "plugins/core/websites/browser/browser.js",
+      in: "plugins/core/qdn/browser/browser.src.js",
+      out: "plugins/core/qdn/browser/browser.js",
     },
     {
       in: "plugins/core/messaging/messaging.src.js",

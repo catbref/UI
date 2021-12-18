@@ -220,7 +220,7 @@ class PublishData extends LitElement {
 				throw new Error(this.errorMessage);
 			}
 
-			this.generalMessage = "Performing proof of work... this can take some time...";
+			this.generalMessage = "Computing proof of work... this can take some time...";
 
 			let signAndProcessRes = await signAndProcess(transactionBytes)
 			if (signAndProcessRes.error) {

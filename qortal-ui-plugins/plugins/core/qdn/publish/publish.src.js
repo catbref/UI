@@ -214,6 +214,11 @@ class PublishData extends LitElement {
 				showError(this.errorMessage)
 				throw new Error(this.errorMessage);
 			}
+			else if (transactionBytes.includes("Error 500 Internal Server Error")) {
+				this.errorMessage = "Internal Server Error when publishing data"
+				showError(this.errorMessage)
+				throw new Error(this.errorMessage);
+			}
 
 			this.generalMessage = "Performing proof of work... this can take some time...";
 

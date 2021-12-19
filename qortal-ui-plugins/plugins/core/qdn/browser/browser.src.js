@@ -51,12 +51,17 @@ class WebBrowser extends LitElement {
 				background-color: white;
 			}
 
+			.address-bar-button mwc-icon {
+				width: 20px;
+			}
+
 			.iframe-container {
 				position: absolute;
-				top: 0; /* To enable address bar, set to 40px or similar */
+				top: 36px;
 				left: 0;
 				right: 0;
 				bottom: 0;
+				border-top: 1px solid #000000;
 			}
 
 			.iframe-container iframe {
@@ -81,7 +86,8 @@ class WebBrowser extends LitElement {
 			<div id="websitesWrapper" style="width:auto; padding:10px; background: #fff; height:100vh;">
 				<div class="layout horizontal center">
 					<div class="address-bar">
-						<!-- TODO: address bar goes here -->
+						<mwc-button @click=${() => this.goBack()} class="address-bar-button"><mwc-icon>arrow_back_ios</mwc-icon></mwc-button>
+						<mwc-button @click=${() => this.goForward()} class="address-bar-button"><mwc-icon>arrow_forward_ios</mwc-icon></mwc-button>
 					</div>
 					<div class="iframe-container">
 						<iframe id="browser-iframe" src="${this.url}" sandbox="allow-scripts allow-forms">
@@ -92,6 +98,23 @@ class WebBrowser extends LitElement {
 			</div>
 		`
 	}
+
+
+	// Navigation
+
+	goBack() {
+		let frame = this.shadowRoot.getElementById("browser-iframe");
+		frame.contentWindow.postMessage({
+			action: "nav_back"
+		}, "*");
+    }
+
+	goForward() {
+		let frame = this.shadowRoot.getElementById("browser-iframe");
+		frame.contentWindow.postMessage({
+			action: "nav_forward"
+		}, "*");
+    }
 
 
 	// Helper Functions (Re-Used in Most part of the UI )

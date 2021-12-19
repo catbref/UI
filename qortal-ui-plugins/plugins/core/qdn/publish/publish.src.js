@@ -72,6 +72,20 @@ class PublishData extends LitElement {
 				display: block;
 				font-size: 14px;
 			}
+
+			.address-bar {
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				height: 100px;
+				background-color: white;
+				height: 36px;
+			}
+
+			.address-bar-button mwc-icon {
+				width: 30px;
+			}
 		`
 	}
 
@@ -79,8 +93,11 @@ class PublishData extends LitElement {
 		return html`
 			<div id="publishWrapper" style="width:auto; padding:10px; background: #fff; height:100vh;">
 				<div class="layout horizontal center" style=" padding:12px 15px;">
+					<div class="address-bar">
+						<mwc-button @click=${() => this.goBack()} class="address-bar-button"><mwc-icon>arrow_back_ios</mwc-icon> Back</mwc-button>
+					</div>
 					<paper-card style="width:100%; max-width:740px;">
-						<div style="background-color: ${this.selectedAddress.color}; margin:0; color: ${this.textColor(this.selectedAddress.textColor)};">
+						<div style="background-color: ${this.selectedAddress.color}; margin:0; margin-top:20px; color: ${this.textColor(this.selectedAddress.textColor)};">
 							<h3 style="margin:0; padding:8px 0; text-transform:capitalize;">Publish / Update ${this.category}</h3>
 						</div>
 					</paper-card>
@@ -113,6 +130,13 @@ class PublishData extends LitElement {
 			</div>
 		`
 	}
+
+	// Navigation
+
+	goBack() {
+		window.history.back();
+    }
+
 
 	renderUploadField() {
 		if (this.uploadType === "file") {

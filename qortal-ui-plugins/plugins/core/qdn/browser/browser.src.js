@@ -49,6 +49,7 @@ class WebBrowser extends LitElement {
 				right: 0;
 				height: 100px;
 				background-color: white;
+				height: 36px;
 			}
 
 			.address-bar-button mwc-icon {

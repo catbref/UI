@@ -103,17 +103,11 @@ class WebBrowser extends LitElement {
 	// Navigation
 
 	goBack() {
-		let frame = this.shadowRoot.getElementById("browser-iframe");
-		frame.contentWindow.postMessage({
-			action: "nav_back"
-		}, "*");
+		window.history.back();
     }
 
 	goForward() {
-		let frame = this.shadowRoot.getElementById("browser-iframe");
-		frame.contentWindow.postMessage({
-			action: "nav_forward"
-		}, "*");
+		window.history.forward();
     }
 
 

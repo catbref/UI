@@ -19,6 +19,7 @@ class Websites extends LitElement {
             loading: { type: Boolean },
             resources: { type: Array },
             followedNames: { type: Array },
+            blockedNames: { type: Array },
             selectedAddress: { type: Object },
         }
     }
@@ -98,6 +99,7 @@ class Websites extends LitElement {
         this.selectedAddress = {}
         this.resources = []
         this.followedNames = []
+        this.blockedNames = []
         this.isLoading = false
     }
 
@@ -119,8 +121,11 @@ class Websites extends LitElement {
                         <vaadin-grid-column header="Status" .renderer=${(root, column, data) => {
                             render(html`${this.renderStatus(data.item)}`, root)
                         }}></vaadin-grid-column>
-                        <vaadin-grid-column width="10rem" flex-grow="0" header="Action" .renderer=${(root, column, data) => {
-                            render(html`${this.renderFollowUnfollowButton(data.item)}`, root)
+                        <vaadin-grid-column width="10rem" flex-grow="0" header="" .renderer=${(root, column, data) => {
+                            render(html`${this.renderFollowUnfollowButton(data.item)}`, root);
+                        }}></vaadin-grid-column>
+                        <vaadin-grid-column width="10rem" flex-grow="0" header="" .renderer=${(root, column, data) => {
+                            render(html`${this.renderBlockUnblockButton(data.item)}`, root);
                         }}></vaadin-grid-column>
                     </vaadin-grid>
                     </vaadin-grid>
@@ -193,6 +198,63 @@ class Websites extends LitElement {
         return ret
     }
 
+    async blockName(websiteObj) {
+        let name = websiteObj.name
+        let items = [
+            name
+        ]
+        let namesJsonString = JSON.stringify({"items": items})
+
+        let ret = await parentEpml.request('apiCall', {
+            url: '/lists/blockedNames',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: `${namesJsonString}`
+        })
+
+        if (ret === true) {
+            // Successfully blocked - add to local list
+            // Remove it first by filtering the list - doing it this way ensures the UI updates
+            // immediately, as apposed to only adding if it doesn't already exist
+            this.blockedNames = this.blockedNames.filter(item => item != name); 
+            this.blockedNames.push(name)
+        }
+        else {
+            parentEpml.request('showSnackBar', 'Error occurred when trying to block this registered name. Please try again')
+        }
+
+        return ret
+    }
+
+    async unblockName(websiteObj) {
+        let name = websiteObj.name
+        let items = [
+            name
+        ]
+        let namesJsonString = JSON.stringify({"items": items})
+
+        let ret = await parentEpml.request('apiCall', {
+            url: '/lists/blockedNames',
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: `${namesJsonString}`
+        })
+
+        if (ret === true) {
+            // Successfully unblocked - remove from local list
+            this.blockedNames = this.blockedNames.filter(item => item != name); 
+        }
+        else {
+            parentEpml.request('showSnackBar', 'Error occurred when trying to unblock this registered name. Please try again')
+        }
+
+        return ret
+    }
+
     renderRole(groupObj) {
         if (groupObj.owner === this.selectedAddress.address) {
             return "Owner"
@@ -230,6 +292,24 @@ class Websites extends LitElement {
         else {
             // render unfollow button
             return html`<mwc-button @click=${() => this.unfollowName(websiteObj)}><mwc-icon>remove_from_queue</mwc-icon>&nbsp;Unfollow</mwc-button>`
+        }
+    }
+
+    renderBlockUnblockButton(websiteObj) {
+        let name = websiteObj.name
+
+        // Only show the block/unblock button if we have permission to modify the list on this node
+        if (this.blockedNames == null || !Array.isArray(this.blockedNames)) {
+            return html``
+        }
+
+        if (this.blockedNames.indexOf(name) === -1) {
+            // render follow button
+            return html`<mwc-button @click=${() => this.blockName(websiteObj)}><mwc-icon>block</mwc-icon>&nbsp;Block</mwc-button>`
+        }
+        else {
+            // render unfollow button
+            return html`<mwc-button @click=${() => this.unblockName(websiteObj)}><mwc-icon>radio_button_unchecked</mwc-icon>&nbsp;Unblock</mwc-button>`
         }
     }
 
@@ -285,6 +365,17 @@ class Websites extends LitElement {
             setTimeout(getFollowedNames, this.config.user.nodeSettings.pingInterval)
         }
 
+        const getBlockedNames = async () => {
+            // this.blockedNames = []
+
+            let blockedNames = await parentEpml.request('apiCall', {
+                url: `/lists/blockedNames`
+            })
+
+            this.blockedNames = blockedNames
+            setTimeout(getBlockedNames, this.config.user.nodeSettings.pingInterval)
+        }
+
 
         window.addEventListener("contextmenu", (event) => {
 
@@ -317,6 +408,7 @@ class Websites extends LitElement {
                 if (!configLoaded) {
                     setTimeout(getArbitraryResources, 1)
                     setTimeout(getFollowedNames, 1)
+                    setTimeout(getBlockedNames, 1)
                     configLoaded = true
                 }
                 this.config = JSON.parse(c)

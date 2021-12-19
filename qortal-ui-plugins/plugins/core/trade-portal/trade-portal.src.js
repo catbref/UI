@@ -539,7 +539,7 @@ class TradePortal extends LitElement {
 						<div id="tab-buy-content">
 							<div class="card">
 								<div style="margin-left: auto">
-									<mwc-icon-button class="btn-clear" title="Clear form" icon="clear_all" @click=${() => this.clearBuyForm()}></mwc-icon-button>
+									<mwc-icon-button class="btn-clear" title="Clear Form" icon="clear_all" @click=${() => this.clearBuyForm()}></mwc-icon-button>
 								</div>
 								<p>
 									<mwc-textfield
@@ -602,7 +602,7 @@ class TradePortal extends LitElement {
 						<div id="tab-sell-content">
 							<div class="card">
 								<div style="margin-left: auto">
-									<mwc-icon-button class="btn-clear" title="Clear form" icon="clear_all" @click=${() => this.clearSellForm()}></mwc-icon-button>
+									<mwc-icon-button class="btn-clear" title="Clear Form" icon="clear_all" @click=${() => this.clearSellForm()}></mwc-icon-button>
 								</div>										
 								<p>
 									<mwc-textfield
@@ -663,7 +663,7 @@ class TradePortal extends LitElement {
 		return html`
 			<div class="my-open-orders">
 				<div class="box">
-					<header><span>MY ORDERS</span><mwc-icon-button icon="more_vert" @click=${() => this.showStuckOrdersDialog()}></mwc-icon-button></header>
+					<header><span>MY ORDERS</span><mwc-icon-button title="Stuck Orders" icon="more_vert" @click=${() => this.showStuckOrdersDialog()}></mwc-icon-button></header>
 					<div class="border-wrapper">
 						<div class="loadingContainer" id="loadingHistoricTrades" style="display:${this.isLoadingMyOpenOrders ? 'block' : 'none'}"><div class="loading">Loading...</div></div>
 						<vaadin-grid multi-sort="true" theme="compact column-borders row-stripes wrap-cell-content" id="myOrdersGrid" aria-label="My Orders" .items="${this.listedCoins.get(this.selectedCoin).myOrders}">

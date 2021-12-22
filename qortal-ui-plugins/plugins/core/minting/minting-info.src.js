@@ -340,7 +340,7 @@ class MintingInfo extends LitElement {
                         Once you have reached level 1, you will be able to create your own minting key and start earning rewards for helping secure the Qortal Blockchain.
                     </div>
                     <div>
-                        <h3>Sponsorchip</h3><br />
+                        <h3>Sponsorship</h3><br />
                         Your sponsor will issue you a ‘Sponsorship Key’ which you will use to add to your node, and begin minting (for no rewards until reaching level 1.)
                         Once you reach level 1, you create/assign your own ‘Minting Key’ and begin earning rewards. You have XXXX blocks remaining in your sponsorship period.
                         <br />

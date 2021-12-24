@@ -304,11 +304,11 @@ class Websites extends LitElement {
         }
 
         if (this.blockedNames.indexOf(name) === -1) {
-            // render follow button
+            // render block button
             return html`<mwc-button @click=${() => this.blockName(websiteObj)}><mwc-icon>block</mwc-icon>&nbsp;Block</mwc-button>`
         }
         else {
-            // render unfollow button
+            // render unblock button
             return html`<mwc-button @click=${() => this.unblockName(websiteObj)}><mwc-icon>radio_button_unchecked</mwc-icon>&nbsp;Unblock</mwc-button>`
         }
     }

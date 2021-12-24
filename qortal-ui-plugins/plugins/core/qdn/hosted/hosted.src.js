@@ -85,30 +85,13 @@ class HostedContent extends LitElement {
             .itemList {
                 padding:0;
             }
-
-            .address-bar {
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				height: 100px;
-				background-color: white;
-				height: 36px;
-			}
-
-			.address-bar-button mwc-icon {
-				width: 30px;
-			}
         `
     }
 
 	render() {
         return html`
             <div id="websites-list-page">
-				<div class="address-bar">
-					<mwc-button @click=${() => this.goBack()} class="address-bar-button"><mwc-icon>arrow_back_ios</mwc-icon> Back</mwc-button>
-				</div>
-                <div style="min-height:48px; display: flex; padding-bottom: 6px; margin: 2px; margin-top:25px;">
+                <div style="min-height:48px; display: flex; padding-bottom: 6px; margin: 2px;">
                     <h2 style="margin: 0; flex: 1; padding-top: .1em; display: inline;">Hosted Content</h2>
                 </div>
 

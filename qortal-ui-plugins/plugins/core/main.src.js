@@ -75,6 +75,15 @@ parentEpml.ready().then(() => {
             parent: false
         },
         {
+            url: 'hosted',
+            domain: 'core',
+            page: 'qdn/hosted/index.html',
+            title: 'Hosted Content',
+            icon: 'dns',
+            menus: [],
+            parent: false
+        },
+        {
             url: 'q-chat',
             domain: 'core',
             page: 'messaging/q-chat/index.html',

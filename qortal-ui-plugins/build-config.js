@@ -112,6 +112,10 @@ const generateForPlugins = () => {
       out: "plugins/core/qdn/browser/browser.js",
     },
     {
+      in: "plugins/core/qdn/hosted/hosted.src.js",
+      out: "plugins/core/qdn/hosted/hosted.js",
+    },
+    {
       in: "plugins/core/messaging/messaging.src.js",
       out: "plugins/core/messaging/messaging.js",
     },

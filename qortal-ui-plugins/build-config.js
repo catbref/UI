@@ -115,6 +115,10 @@ const generateForPlugins = () => {
       in: "plugins/core/minting/minting-info.src.js",
       out: "plugins/core/minting/minting-info.js",
     },
+    {
+      in: "plugins/core/puzzles/puzzles.src.js",
+      out: "plugins/core/puzzles/puzzles.js",
+    },
   ].map((file) => {
     return generateRollupConfig(
       path.join(__dirname, file.in),

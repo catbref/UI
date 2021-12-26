@@ -25,6 +25,7 @@ class Puzzles extends LitElement {
 	static get properties() {
 		return {
 			loading: { type: Boolean },
+			invalid: { type: Boolean },
 			puzzles: { type: Array },
 			solved: { type: Object },
 			selectedAddress: { type: Object },
@@ -69,6 +70,7 @@ class Puzzles extends LitElement {
 	constructor() {
 		super()
 		this.loading = false
+		this.invalid = true
 		this.puzzles = []
 		this.solved = {}
 		this.selectedAddress = {}
@@ -112,7 +114,7 @@ class Puzzles extends LitElement {
 					<div id="puzzleGuessClue" ?hidden=${!this.selectedPuzzle.clue}>Clue: <span class="clue">${this.selectedPuzzle.clue}</span></div>
 					<br>
 					<div id="puzzleGuessInputHint" style="font-size: smaller;">Your guess needs to be 43 or 44 characters and <b>not</b> include 0 (zero), I (upper i), O (upper o) or l (lower L).</div>
-					<mwc-textfield style="width:100%" ?disabled="${this.loading}" label="Your Guess" id="puzzleGuess" pattern="[1-9A-HJ-NP-Za-km-z]{43,44}" style="font-family: monospace;"></mwc-textfield>
+					<mwc-textfield style="width:100%" ?disabled="${this.loading}" label="Your Guess" id="puzzleGuess" pattern="[1-9A-HJ-NP-Za-km-z]{43,44}" style="font-family: monospace;" maxLength="44" charCounter="true" autoValidate="true"></mwc-textfield>
 					<div style="text-align:right; height:36px;">
 						<span ?hidden="${!this.loading}">
 							<!-- loading message -->
@@ -128,10 +130,9 @@ class Puzzles extends LitElement {
 					</div>
 
 					<mwc-button
-						?disabled="${this.loading}"
+						?disabled="${this.loading || this.invalid}"
 						slot="primaryAction"
-						@click=${this.submitPuzzleGuess}
-						>
+						@click=${this.submitPuzzleGuess}>
 						Submit
 					</mwc-button>
 					<mwc-button
@@ -162,7 +163,13 @@ class Puzzles extends LitElement {
 			}
 		}
 
-		const textBox = this.shadowRoot.getElementById("recipientPublicKey")
+		const textBox = this.shadowRoot.getElementById("puzzleGuess")
+
+		// keep track of input validity so we can enabled/disable submit button
+		textBox.validityTransform = (newValue, nativeValidity) => {
+			this.invalid = !nativeValidity.valid
+			return nativeValidity
+		}
 
 		const getPuzzleGroupMembers = async () => {
 			return await parentEpml.request('apiCall', {
@@ -332,7 +339,9 @@ class Puzzles extends LitElement {
 	async guessPuzzle(puzzle) {
 		this.selectedPuzzle = puzzle
 		this.shadowRoot.getElementById("puzzleGuess").value = ''
+		this.shadowRoot.getElementById("puzzleGuess").checkValidity()
 		this.message = ''
+		this.invalid = true
 
 		this.shadowRoot.querySelector('#puzzleGuessDialog').show()
 	}
